@@ -1,0 +1,43 @@
+{
+  "name": "grunt-xncompiler",
+  "description": "The best Grunt plugin ever.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/machenhui/xncompiler",
+  "author": {
+    "name": "machenhui",
+    "email": "machenhui88@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/machenhui/xncompiler.git"
+  },
+  "bugs": {
+    "url": "https://github.com/machenhui/xncompiler/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/machenhui/xncompiler/blob/master/LICENSE-MIT"
+    }
+  ],
+  "engines": {
+    "node": "0.10.25"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "^0.9.2",
+    "grunt-contrib-clean": "^0.5.0",
+    "grunt-contrib-nodeunit": "^0.3.3",
+    "grunt": "~0.4.5",
+    "uglify-js":"~2.4.15",
+     "requirejs":"~2.1.15"
+  },
+  "peerDependencies": {
+    "grunt": "~0.4.5"
+  },
+  "keywords": [
+    "gruntplugin"
+  ]
+}

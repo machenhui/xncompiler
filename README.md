@@ -1,6 +1,7 @@
 # grunt-xncompiler
 
 > The best Grunt plugin ever.
+> 负责将符合基本commonjs 规范的代码，合并成单个文件，并去除全局变量
 
 ## Getting Started
 This plugin requires Grunt `~0.4.5`

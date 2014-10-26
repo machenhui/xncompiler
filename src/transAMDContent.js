@@ -2,6 +2,7 @@
  * 转化AMD 写法中的 require define 为局部变量
  */
 var getModulePath = require("./transCommonJS").getModulePath;
+var moduleStateMap = require("./transCMDRequire").moduleStateMap;
 /**
  * 将define 指令转换成全局命名空间下的一个函数
  * define(moduleName,deps,fun) ===> window[namespace][moduleName] = (function(deps...){})();
@@ -62,7 +63,7 @@ function defineTemplate(namespace,moduleName,runContent){
     return tpl.replace(/\{namespace\}/gi,namespace).replace(/\{moduleName\}/gi,moduleName).replace(/\{runContent\}/gi,runContent);
 }
 
-module.exports.transDefine = function(namespace,moduleName,content){
+module.exports.transDefine = function(namespace,moduleName,content,filePath){
     var moduleBrowserName = getModulePath(namespace,moduleName.replace(/\.js$/gi,""));
     var getInfo = new Function("define",content);
     try{
@@ -80,7 +81,11 @@ module.exports.transDefine = function(namespace,moduleName,content){
         console.log(e);
     }
     var depsNames = [];
-    for(var i= 0,l=info.deps.length;i<l;i++){
+    var l = info.deps.length;
+    if(moduleStateMap&&moduleStateMap[filePath]){
+        l = moduleStateMap[filePath];
+    }
+    for(var i= 0;i<l;i++){
         if(info.deps[i] != ""){
             depsNames.push(namespace+"[\""+getModulePath(namespace,info.deps[i])+"\"]");
         }
@@ -97,7 +102,7 @@ module.exports.transDefine = function(namespace,moduleName,content){
  * require(deps,fun) ===>fun(transDepName....); transDepName 为全局命名空间下的变量
  */
 
-module.exports.transRequire = function(namespace,content){
+module.exports.transRequire = function(namespace,content,filePath){
     var getInfo = new Function("require",content);
 
     try{
@@ -116,7 +121,11 @@ module.exports.transRequire = function(namespace,content){
         console.log(e);
     }
     var depsNames = [];
-    for(var i= 0,l=info.deps.length;i<l;i++){
+    var l = info.deps.length;
+    if(moduleStateMap&&moduleStateMap[filePath]){
+        l = moduleStateMap[filePath];
+    }
+    for(var i= 0;i<l;i++){
         depsNames.push(namespace+"[\""+getModulePath(namespace,info.deps[i])+"\"]");
     }
     var runFun = "("+info.callBackFn+")("+depsNames.join()+");";

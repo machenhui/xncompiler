@@ -25,6 +25,7 @@ exports.getModulePath = function(namespace,moduleName){
 var transRequire = require("./transAMDContent").transRequire;
 var transDefine = require("./transAMDContent").transDefine;
 var transCallBackReq = require("./transCMDRequire").transCallBack;
+var trimDefine = require("./compiler").trimDefine;
 
 
 /**
@@ -88,7 +89,7 @@ xnParser.prototype = {
             var that = this;
             var rootPath = rootPath?rootPath:"static/";
             var startFile="build/tmpStart.js";
-            fs.writeFile(startFile,"var define=function(){};var "+that._options.namespacePrefix+"={},"+that._options.namespacePrefix+"_cache={};",null,function(){
+            fs.writeFile(startFile,"var "+that._options.namespacePrefix+"={},"+that._options.namespacePrefix+"_cache={};",null,function(){
                 var config = extend({
                     baseUrl:rootPath,
                     logLevel:0,
@@ -111,9 +112,9 @@ xnParser.prototype = {
                         var isRequire = contents.search(/require\s*\(\s*\[(.|\r\n)*\],\s*function\s*\(/gi)!=-1;
                         //if(this.include[1] && moduleName.replace("//","/") == this.include[1].replace("//","/")){
                         if(isRequire){
-                            return transRequire(that._options.namespacePrefix,contents);
+                            return transRequire(that._options.namespacePrefix,contents,path);
                         }else{
-                            return transDefine(that._options.namespacePrefix,moduleName,contents);
+                            return transDefine(that._options.namespacePrefix,moduleName,contents,path);
                         }
 
                     }
@@ -124,6 +125,9 @@ xnParser.prototype = {
                     //included. Load the built file for the contents.
                     //Use config.out to get the optimized file contents.
                     var contents = fs.readFileSync(config.out, 'utf8');
+                    contents = trimDefine(config.out,contents);
+                    fs.writeFileSync(config.out,contents.replace(/\;{1,}$/gi,";").replace(/(\r|\n|\r\n)\;(\r|\n|\r\n)*$/gi,""));
+                    //console.log(contents);
                     if(successCallBack){
                         successCallBack(contents);
                     }

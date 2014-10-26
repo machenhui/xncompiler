@@ -67,9 +67,11 @@ function getRequireDeps(fileName,content,namespace){
         additionDepends:result
     }
 }
-
-
-
+/**
+ * 记录状态，去除 因 callBack里面的require 造成的参数多余
+ */
+var moduleStateMap = {};
+module.exports.moduleStateMap = moduleStateMap;
 module.exports.transCallBack = function(namespace,content,moduleName,filePath){
 
 
@@ -120,6 +122,7 @@ module.exports.transCallBack = function(namespace,content,moduleName,filePath){
     }
 
     if(requires&&requires.length>0){
+        moduleStateMap[filePath] = info.deps.length;
         for(var l=requires.length;l--; ){
             info.deps.push(requires[l]);
         }

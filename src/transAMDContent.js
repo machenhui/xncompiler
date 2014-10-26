@@ -90,7 +90,7 @@ module.exports.transDefine = function(namespace,moduleName,content,filePath){
             depsNames.push(namespace+"[\""+getModulePath(namespace,info.deps[i])+"\"]");
         }
     }
-    var runFun = "("+info.callBackFn+")("+depsNames.join()+");";
+    var runFun = "("+info.callBackFn+").call({}"+(depsNames.length?",":"")+depsNames.join()+");";
     //return "var "+moduleBrowserName+"="+runFun;
     return defineTemplate(namespace,moduleBrowserName,runFun);
 };
@@ -128,7 +128,7 @@ module.exports.transRequire = function(namespace,content,filePath){
     for(var i= 0;i<l;i++){
         depsNames.push(namespace+"[\""+getModulePath(namespace,info.deps[i])+"\"]");
     }
-    var runFun = "("+info.callBackFn+")("+depsNames.join()+");";
+    var runFun = "("+info.callBackFn+").call({}"+(depsNames.length?",":"")+depsNames.join()+");";
     return runFun;
 }
 

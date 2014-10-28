@@ -6,20 +6,38 @@ var requirejs = require('requirejs');
 
 var extend = require("./util.js").extend;
 var fs = require("fs");
-
+var Node_PATH = require("path");
 
 var moduleNameSpateStr="_$_";
 
+var STATIC_ROOT_PATH;
 /**
  * 根据规则转换模块名称为变量
  * @param moduleName
  * @returns {String}
  */
-function getModuleName(moduleName){
-	return moduleName.replace(/\.js$/gi,"").replace("/",moduleNameSpateStr);
+function getModuleName(moduleName,filePath){
+    if(filePath&&moduleName.search(/^\./gi)!=-1){
+        //解决相对路径
+        filePath = filePath.replace(/\w*\.js$/gi,"");
+        var path = Node_PATH.resolve(filePath,moduleName);
+        var rootPATH = Node_PATH.resolve("./"+STATIC_ROOT_PATH);
+        if(rootPATH&&path){
+            moduleName = path.replace(rootPATH,"").replace(/\\/gi,"/").replace(/^\//gi,"");
+            //console.log(moduleName.replace(/\.js$/gi,""));
+        }
+    }
+	return moduleName.replace(/\.js$/gi,"").replace(/\//gi,moduleNameSpateStr);
 }
-exports.getModulePath = function(namespace,moduleName){
-    return moduleNameSpateStr+getModuleName(moduleName);
+var moduleNameShotName = {};
+var index=0;
+exports.getModulePath = function(namespace,moduleName,filePath){
+    var key = moduleNameSpateStr+getModuleName(moduleName,filePath);
+    /*if(!moduleNameShotName[key]){
+        moduleNameShotName[key] = "a"+(index++);
+    }
+    return moduleNameShotName[key];*/
+    return key;
 };
 
 var transRequire = require("./transAMDContent").transRequire;
@@ -87,9 +105,9 @@ xnParser.prototype = {
 		 */
         concatDepsFile:function(jsFile,rootPath,rjsOptions,successCallBack,errorCallBack){
             var that = this;
-            var rootPath = rootPath?rootPath:"static/";
+            var rootPath = STATIC_ROOT_PATH = rootPath?rootPath:"static/";
             var startFile="build/tmpStart.js";
-            fs.writeFile(startFile,"var "+that._options.namespacePrefix+"={},"+that._options.namespacePrefix+"_cache={};",null,function(){
+            fs.writeFile(startFile,"if(typeof "+that._options.namespacePrefix+" == 'undefined'){var "+that._options.namespacePrefix+"={},"+that._options.namespacePrefix+"_cache={},"+that._options.namespacePrefix+"_g=(typeof window=='undefined'?global:window);}",null,function(){
                 var config = extend({
                     baseUrl:rootPath,
                     logLevel:0,

@@ -42,7 +42,8 @@ function getRequireDeps(fileName,content,namespace){
         if ( node instanceof UglifyJS.AST_Call) {
             var ex = node.expression;
             var name = ex.name;
-            if (ex.scope && name&&ex.name == "require" && !isInScopeChainVariables(ex.scope, name)) {
+            //ex.scope && && !isInScopeChainVariables(ex.scope, name)
+            if ( name&&ex.name == "require" ) {
                 if(node.args.length == 1){
                     result.push(node.args[0].value);
                     var parent = walker.parent();
@@ -50,9 +51,21 @@ function getRequireDeps(fileName,content,namespace){
                         //console.log(parent.TYPE);
                         var node_new = make_node(UglifyJS.AST_Symbol,toplevel_ast);
                         //node_new.value = node.args[0].value;
-                        node_new.name = namespace+"[\""+getModulePath(namespace,node.args[0].value)+"\"]";
+                        node_new.name = namespace+"[\""+getModulePath(namespace,node.args[0].value,fileName)+"\"]";
                         parent.value = node_new;
-                        return true;
+                        //return true;
+                    }else if(parent instanceof UglifyJS.AST_Call){
+                        var node_new = make_node(UglifyJS.AST_Symbol,toplevel_ast);
+                        //node_new.value = node.args[0].value;
+                        node_new.name = namespace+"[\""+getModulePath(namespace,node.args[0].value,fileName)+"\"]";
+                        //node = node_new;
+                        var args = parent.args;
+                        for(var i = 0,l=args.length;i<l;i++){
+                            if(args[i] == node){
+                                args[i] = node_new;
+                            }
+                        }
+                        //return node_new;
                     }
 
                 }
@@ -95,6 +108,14 @@ module.exports.transCallBack = function(namespace,content,moduleName,filePath){
                 if(Object.prototype.toString.call(deps) != "[object Array]"){
                     deps = [deps];
                 }
+                if(arguments.length==1){
+                    var tmp = deps;
+                    callBackFn = deps;
+                    deps = [];
+                }
+                if(!deps){
+                    console.log(arguments);
+                }
                 info = {
                     moduleName:moduleName,
                     deps: deps,
@@ -120,18 +141,26 @@ module.exports.transCallBack = function(namespace,content,moduleName,filePath){
     }catch(e){
         console.log(e);
     }
-
+    //console.log(requires);
     if(requires&&requires.length>0){
         moduleStateMap[filePath] = info.deps.length;
         for(var l=requires.length;l--; ){
             info.deps.push(requires[l]);
         }
     }
-    //加入隐含的deps r.js 就会分析这些隐含依赖
-    if(moduleName){
-        return "define('"+info.moduleName+"',[\""+info.deps.join("\",\"")+"\"],"+info.callBackFn+")";
-    }else{
-        return "require([\""+info.deps.join("\",\"")+"\"],"+info.callBackFn+")";
+    var rsString;
+    try{
+        //加入隐含的deps r.js 就会分析这些隐含依赖
+        if(moduleName){
+            rsString = "define('"+info.moduleName+"',[\""+info.deps.join("\",\"")+"\"],"+info.callBackFn+")";
+        }else{
+            rsString = "require([\""+info.deps.join("\",\"")+"\"],"+info.callBackFn+")";
+        }
+    }catch(e){
+
+        console.log(info);
+        throw e;
     }
+    return rsString;
 
 }

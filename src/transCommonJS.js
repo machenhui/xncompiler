@@ -33,11 +33,11 @@ var moduleNameShotName = {};
 var index=0;
 exports.getModulePath = function(namespace,moduleName,filePath){
     var key = moduleNameSpateStr+getModuleName(moduleName,filePath);
-    /*if(!moduleNameShotName[key]){
+    if(!moduleNameShotName[key]){
         moduleNameShotName[key] = "a"+(index++);
     }
-    return moduleNameShotName[key];*/
-    return key;
+    return moduleNameShotName[key];
+    //return key;
 };
 
 var transRequire = require("./transAMDContent").transRequire;
@@ -107,7 +107,8 @@ xnParser.prototype = {
             var that = this;
             var rootPath = STATIC_ROOT_PATH = rootPath?rootPath:"static/";
             var startFile="build/tmpStart.js";
-            fs.writeFile(startFile,"if(typeof "+that._options.namespacePrefix+" == 'undefined'){var "+that._options.namespacePrefix+"={},"+that._options.namespacePrefix+"_cache={},"+that._options.namespacePrefix+"_g=(typeof window=='undefined'?global:window);}",null,function(){
+            var endFile = "build/tmpEnd.js";
+            fs.writeFile(startFile,"(function(){if(typeof "+that._options.namespacePrefix+" == 'undefined'){var "+that._options.namespacePrefix+"={},"+that._options.namespacePrefix+"_cache={},"+that._options.namespacePrefix+"_g=(typeof window=='undefined'?global:window);}",null,function(){
                 var config = extend({
                     baseUrl:rootPath,
                     logLevel:0,
@@ -117,8 +118,8 @@ xnParser.prototype = {
                     name:jsFile.replace(/\.js$/,""),
                     //include:[jsFile],//devConf.modulePath+"/js/index.js",
                     wrap:{
-                        startFile:startFile
-                        //endFile:""
+                        startFile:startFile,
+                        endFile:endFile
                     },
                     optimize  : 'none',
                     onBuildRead : function(moduleName, path, contents){

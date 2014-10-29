@@ -35,6 +35,16 @@ function treeTransForm(fileName,content){
     var compressed_ast =topLevelAST.transform(deep_clone);
     content = compressed_ast.print_to_string({ beautify: true });
     //console.log(content);
+    //return content;
+    var compressor = UglifyJS.Compressor({
+        if_return:true,
+        warnings:false
+        //beautify:false
+    });
+    //命名混淆
+    compressed_ast.mangle_names(true);
+    var compressed_ast2 = compressed_ast.transform(compressor);
+    content = compressed_ast2.print_to_string();
     return content;
 }
 

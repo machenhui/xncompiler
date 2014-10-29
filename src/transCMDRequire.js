@@ -38,6 +38,20 @@ function getRequireDeps(fileName,content,namespace){
     });
     toplevel_ast.figure_out_scope();
     var result = [];
+
+    var deep_clone = new UglifyJS.TreeTransformer(function(node, descend){
+        if(node instanceof UglifyJS.AST_Call && node.expression.name == "require"&&node.args.length==1){
+            result.push(node.args[0].value);
+            var node_new = make_node(UglifyJS.AST_Symbol,toplevel_ast);
+            //node_new.value = node.args[0].value;
+            node_new.name = namespace+"[\""+getModulePath(namespace,node.args[0].value,fileName)+"\"]";
+            descend(node,this);
+            return node_new;
+        }
+        descend(node,this);
+        return node;
+    });
+
     var walker = new UglifyJS.TreeWalker(function (node,descend) {
         if ( node instanceof UglifyJS.AST_Call) {
             var ex = node.expression;
@@ -73,10 +87,11 @@ function getRequireDeps(fileName,content,namespace){
             }
         }
     });
-    toplevel_ast.walk(walker);
+    //toplevel_ast.walk(walker);
+    var topAst = toplevel_ast.transform(deep_clone);
     //返回顶级语法树和 附加的depends对象
     return {
-        topAST:toplevel_ast,
+        topAST:topAst,
         additionDepends:result
     }
 }
@@ -91,7 +106,9 @@ module.exports.transCallBack = function(namespace,content,moduleName,filePath){
     var rs_deps = getRequireDeps(filePath,content,namespace);
     var requires = [];
     if(rs_deps.additionDepends&&rs_deps.additionDepends.length>0){
-        var compressor = UglifyJS.Compressor();
+        var compressor = UglifyJS.Compressor({
+            warnings:false
+        });
         var compressed_ast = rs_deps.topAST.transform(compressor);
         content = compressed_ast.print_to_string();
         requires = rs_deps.additionDepends;

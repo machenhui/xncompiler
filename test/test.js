@@ -1,3 +1,3 @@
 
 var compiler = require("../src/transCommonJS").xncompiler();
-new compiler("requireA.js","test/data/");
+new compiler("src/web/main.js","test/blendUI/");

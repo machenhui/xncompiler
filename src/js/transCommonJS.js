@@ -4,7 +4,7 @@
  */
 var requirejs = require('requirejs');
 
-var extend = require("./util.js").extend;
+var extend = require("./../util.js").extend;
 var fs = require("fs");
 var Node_PATH = require("path");
 

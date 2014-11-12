@@ -19,3 +19,10 @@ exports.extend= function(){
     }
     return result;
 };
+
+exports.type = function(obj){
+    var type = Object.prototype.toString.call(obj);
+    if(type){
+        return type.substring(8,type.length-1);
+    }
+}

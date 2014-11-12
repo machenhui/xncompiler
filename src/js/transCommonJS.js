@@ -164,6 +164,28 @@ xnParser.prototype = {
 		}
 };
 
+function transCommonJSRead(contents,namespacePrefix,moduleName,path){
+    var isRequire = contents.search(/require\s*\(\s*\[(.|\r\n)*\],\s*function\s*\(/gi)!=-1;
+    var content = transCallBackReq(namespacePrefix,contents,isRequire?null:moduleName,path);
+    return content;
+    if(isRequire){
+        return transRequire(namespacePrefix,contents,path);
+    }else{
+        return transDefine(namespacePrefix,moduleName,contents,path);
+    }
+}
+
+function transCommonJSWrite(contents,namespacePrefix,moduleName,path){
+    var isRequire = contents.search(/require\s*\(\s*\[(.|\r\n)*\],\s*function\s*\(/gi)!=-1;
+    if(isRequire){
+        return transRequire(namespacePrefix,contents,path);
+    }else{
+        return transDefine(namespacePrefix,moduleName,contents,path);
+    }
+}
+
+exports.transCommonJSContentRead = transCommonJSRead;
+exports.transCommonJSContentWrite = transCommonJSWrite;
 exports.xncompiler = function(){
     return xnParser;
 };

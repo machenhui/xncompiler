@@ -1,3 +1,11 @@
+//var compiler = require("../src/js/transCommonJS").xncompiler();
+//new compiler("src/web/main.js", "test/blendUI/");
+var compiler = require("../src/js/singleFilePackage").singleFilePackage;
 
-var compiler = require("../src/transCommonJS").xncompiler();
-new compiler("src/web/main.js","test/blendUI/");
+new compiler({
+    baseUrl:"test/blendUI/",
+    source:"src/web/main.js",
+    mainConfigFile:"test/blendUI/require.config.js",
+    output:"./build/"
+});
+

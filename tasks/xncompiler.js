@@ -7,7 +7,7 @@
  */
 
 'use strict';
-
+var main = require("../src/js/main");
 module.exports = function(grunt) {
 
   // Please see the Grunt documentation for more information regarding task
@@ -19,7 +19,7 @@ module.exports = function(grunt) {
       punctuation: '.',
       separator: ', '
     });
-
+    main(options);
     // Iterate over all specified file groups.
     this.files.forEach(function(f) {
       // Concat specified files.

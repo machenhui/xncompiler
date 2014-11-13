@@ -100,7 +100,7 @@ function getRequireDeps(fileName,content,namespace){
  */
 var moduleStateMap = {};
 module.exports.moduleStateMap = moduleStateMap;
-module.exports.transCallBack = function(namespace,content,moduleName,filePath){
+module.exports.transCallBack = function(namespace,content,moduleName,filePath,options){
 
 
     var rs_deps = getRequireDeps(filePath,content,namespace);
@@ -178,6 +178,15 @@ module.exports.transCallBack = function(namespace,content,moduleName,filePath){
         console.log(info);
         throw e;
     }
-    return rsString;
+    if(options&&options.returnDeps){
+        return {
+            moduleName:moduleName,
+            deps:info.deps,
+            rsString:rsString
+        }
+    }else{
+        return rsString;
+    }
+
 
 }

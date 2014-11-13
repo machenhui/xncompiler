@@ -5,6 +5,8 @@
 var requirejs = require('requirejs');
 
 var extend = require("./../util.js").extend;
+var util = require("./../util.js");
+var dirWalker = require("./../util.js").dirWalker;
 var fs = require("fs");
 var Node_PATH = require("path");
 
@@ -83,19 +85,24 @@ xnParser.prototype = {
             this._options = extend({
                     namespacePrefix:"xnCompiler"+parseInt(100+parseInt(Math.random()*10000000)),
 					rjsOptions:{},
-					uglifyOptions:{}
+					uglifyOptions:{},
+                    _fileStatsMap:{}
 				},options);
             this.concatDepsFile(this.mainJS,this.rootPath,this._options.rjsOptions,function(content){
                 //进行uglify2 压缩
             })
 		},
-        readCommonFile:function(moduleName,path,contents){
-            //使用uglify2 进行文件内容的转意
-            //主要是讲callBack内部的require 替换成全局变量
-        },
-        writeCommonFile:function(moduleName,path,contents){
-            //改些文件内容代码，去除外层的require 和 define
-            //转意文件内容
+        _resolveDeps:function(moduleName,deps){
+            var rs = [];
+            for(var i = 0,l= deps.length;i<l;i++){
+                var item = deps[i];
+                if(item&&item.length>0){
+                    var path = Node_PATH.resolve(Node_PATH.dirname(this.rootPath+Node_PATH.sep+moduleName),item);
+                    path = Node_PATH.relative(this.rootPath,path);
+                    rs.push(path.replace(/\\{1,}/gi,"/"));
+                }
+            }
+            return rs;
         },
 		/**
 		 *  使用r.js 读取依赖分析，返回依赖的js 文件
@@ -111,7 +118,7 @@ xnParser.prototype = {
             fs.writeFile(startFile,"(function(){if(typeof "+that._options.namespacePrefix+" == 'undefined'){var "+that._options.namespacePrefix+"={},"+that._options.namespacePrefix+"_cache={},"+that._options.namespacePrefix+"_g=(typeof window=='undefined'?global:window);}",null,function(){
                 var config = extend({
                     baseUrl:rootPath,
-                    logLevel:0,
+                    logLevel:4,
                     mainConfigFile: rootPath+"/require.config.js",
                     out:"build/"+jsFile,
                     //判断入口js 文件，是require 就用require,是define 就用define 进行合并
@@ -123,19 +130,30 @@ xnParser.prototype = {
                     },
                     optimize  : 'none',
                     onBuildRead : function(moduleName, path, contents){
+                        if(that._options.fileStatsMap[path]){
+                            return that._options.fileStatsMap[path].rsString;
+                        }
                         var isRequire = contents.search(/require\s*\(\s*\[(.|\r\n)*\],\s*function\s*\(/gi)!=-1;
-                        return transCallBackReq(that._options.namespacePrefix,contents,isRequire?null:moduleName,path);
+                        var rs = transCallBackReq(that._options.namespacePrefix,contents,isRequire?null:moduleName,path,{
+                            returnDeps:true
+                        });
+                        rs.deps = that._resolveDeps(moduleName,rs.deps);
+                        that._options.fileStatsMap[path]={modulename:moduleName,deps:rs.deps,rsString:rs.rsString};
+                        return rs.rsString;
                     },
                     onBuildWrite: function (moduleName, path, contents) {
                         //console.log(moduleName.replace("//","/"),this.include[0].replace("//","/"));
                         var isRequire = contents.search(/require\s*\(\s*\[(.|\r\n)*\],\s*function\s*\(/gi)!=-1;
                         //if(this.include[1] && moduleName.replace("//","/") == this.include[1].replace("//","/")){
+                        var data;
                         if(isRequire){
-                            return transRequire(that._options.namespacePrefix,contents,path);
+                            data = transRequire(that._options.namespacePrefix,contents,path);
                         }else{
-                            return transDefine(that._options.namespacePrefix,moduleName,contents,path);
+                            data = transDefine(that._options.namespacePrefix,moduleName,contents,path);
                         }
+                        //util.writeFile(that.output+Node_PATH.sep+path,data);
 
+                        return data;
                     }
                 },rjsOptions);
 
@@ -149,6 +167,9 @@ xnParser.prototype = {
                     //console.log(contents);
                     if(successCallBack){
                         successCallBack(contents);
+                    }
+                    if(that._options.compileReady){
+                        that._options.compileReady();
                     }
                     //console.log(contents);
                 }, function(err) {
@@ -168,11 +189,6 @@ function transCommonJSRead(contents,namespacePrefix,moduleName,path){
     var isRequire = contents.search(/require\s*\(\s*\[(.|\r\n)*\],\s*function\s*\(/gi)!=-1;
     var content = transCallBackReq(namespacePrefix,contents,isRequire?null:moduleName,path);
     return content;
-    if(isRequire){
-        return transRequire(namespacePrefix,contents,path);
-    }else{
-        return transDefine(namespacePrefix,moduleName,contents,path);
-    }
 }
 
 function transCommonJSWrite(contents,namespacePrefix,moduleName,path){
@@ -186,6 +202,47 @@ function transCommonJSWrite(contents,namespacePrefix,moduleName,path){
 
 exports.transCommonJSContentRead = transCommonJSRead;
 exports.transCommonJSContentWrite = transCommonJSWrite;
+
+//过滤目录，生成依赖分析表
+function transDirCommonJS(){
+    this._init.apply(this,arguments);
+}
+
+transDirCommonJS.prototype = {
+    _init:function(options){
+        this.source = options.source;
+        this.output = options.output;
+        this.relationMapOutput = options.relationMapOutput;
+        this.namespacePrefix = options.namespacePrefix;
+        this.baseUrl = options.baseUrl;
+        this.transDir();
+    },
+    transDir:function(){
+        var that = this;
+        that.fileStatsMap = {};
+        var length = 0,index =0;
+        dirWalker(this.baseUrl+Node_PATH.sep+this.source,function(filePath,fileData){
+            filePath = filePath.replace(that.baseUrl+Node_PATH.sep,"").replace(/\\/gi,"/").replace(/\/{1,}/gi,"/");
+            length++;
+            if(!that.fileStatsMap[filePath]){
+                var xnCompiler = new xnParser(filePath,that.baseUrl,{
+                    namespacePrefix:that.namespacePrefix,
+                    fileStatsMap :that.fileStatsMap,
+                    compileReady:function(){
+                        index++;
+                        if(index == length&&length>0){
+                            console.log(that.fileStatsMap);
+                        }
+                    }
+                });
+            }else{
+                console.log(that.fileStatsMap[filePath]);
+            }
+        })
+    }
+}
+
+exports.transDirCommonJS = transDirCommonJS;
 exports.xncompiler = function(){
     return xnParser;
 };

@@ -7,10 +7,10 @@ var fs = require("fs");
 var path = require("path");
 
 var vm = require("vm");
+var util = require("../util");
 
 
-
-function mkdirSync(url,mode,cb){
+/*function mkdirSync(url,mode,cb){
     var  arr = url.split("/");
     mode = mode || 0755;
     cb = cb || function(){};
@@ -42,8 +42,9 @@ function writeFile(_path,content){
             fs.writeFileSync(_path, content);
         }
     });
-}
+}*/
 
+var writeFile = util.writeFile;
 
 
 

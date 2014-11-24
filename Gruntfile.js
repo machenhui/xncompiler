@@ -30,24 +30,45 @@ module.exports = function(grunt) {
 
     // Configuration to be run (and then tested).
     xncompiler: {
-      default_options: {
-        options: {
-        },
-        files: {
-          'tmp/default_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
-      },
-      custom_options: {
-        options: {
-          separator: ': ',
-          punctuation: ' !!!'
-        },
-        files: {
-          'tmp/custom_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
+      test:{
+        baseUrl:"test/blendUI/",
+        source:"src/web/main.js",
+        mainConfigFile:"test/blendUI/require.config.js",
+        output:"./build/"
       }
     },
-
+    xnConditionCompile:{
+      test:{
+        source:"./test/runtime-API/runtime-API/src/device/",
+        output:"./build/",
+        conditionFile:"./test/data/condition.js",
+        globalDefineFile:"./test/data/defineVar.js"
+        //optimize:"none"
+      }
+    },
+    xnTransCommonJS:{
+      test:{
+        baseUrl:"test/blendUI/",
+        source:"src/web/",
+        mainConfigFile:"test/blendUI/require.config.js",
+        output:"./build/"
+      }
+    },
+    xnCSSRename:{
+      test:{
+        src:"test/data/css/index.css",
+        mangleNameOutputFile:"build/index.css.map.json",
+        output:"./build/test/data/css/index.css",
+        cssNamePrefix:"wa-ticket-"
+      }
+    },
+    xnTemplateParser:{
+      test:{
+        source:"test/data/soy/test.soy",
+        output:"./build/test/data/soy/test.js",
+        cssRenameMap:"build/index.css.map.json"
+      }
+    },
     // Unit tests.
     nodeunit: {
       tests: ['test/*_test.js']

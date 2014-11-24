@@ -1,0 +1,194 @@
+/**
+ * 过滤js 文件中有关 css selector 的操作
+ *  1.编译期
+ *      解惑全觉的几个function
+ *          getClassByName
+ *          querySelectorAll
+ *          querySelector
+ *          Element.className 属性的访问
+ *          Element.classList.add
+ *                      添加某个class
+ *          Element.classList.remove
+ *                      删除某个class
+ *          Element.classList.contains
+ *                      是否包含
+ *
+ *  2.运行期
+ *      定义方法getCSSName
+ */
+
+var funNames = {"getClassByName":1,"querySelectorAll":1,"querySelector":1};
+var attributeName = {"className":1};
+var ElementReference = {
+    "classList":{
+        "add":function(){},
+        "remove":function(){},
+        "contains":function(){}
+    }
+};
+var DEF_TYPES = {
+    "CLASS_NAME":1,
+    "SELECTOR":2
+};
+var parser = require("../css/selectorParser");
+var xnCSSParser = parser.toString().replace(/^function\s*/i,"function xnCSSParser");
+var util = require("../util");
+var UglifyJS = require("uglify-js");
+var fs = require("fs");
+var Node_Path = require("path");
+function transCSSName(){
+    this._init.apply(this,arguments);
+}
+transCSSName.prototype = {
+    _init:function(options){
+        this._options = util.extend({
+            cssRenameMap:null,//指定cssRenameMap
+            src:null //指定原文件
+        },options);
+        this._options.cssRenameMap = {
+            "ttttt":"a",
+            "ddd":"b",
+            "ddddd":"c",
+            "dddd":"e",
+            "dddddddddddd":"f"
+        };
+        var sourceMapText = fs.readFileSync("./build/index.css.map.json");
+        this._options.cssRenameMap = JSON.parse(sourceMapText);
+        var sourceMapText ="var xnCSSRenameMap="+sourceMapText;
+        this.addFunText = this._initFunText(sourceMapText,xnCSSParser)
+    },
+    _initFunText:function(sourceMapText,xnCSSParser){
+        var xnGetCSSNameFunText = fs.readFileSync(Node_Path.dirname(module.filename.replace(/\\/gi,"/"))+"/jsLib/xnGetCSSName.js");
+        var rs = [sourceMapText,xnCSSParser,xnGetCSSNameFunText];
+        return rs.join(";");
+    },
+    /**
+     * 转换是String,还是表达式
+     */
+    _transClassValue:function(valueNode,TYPE,ast){
+        //console.log(valueNode.TYPE);
+        if(valueNode instanceof UglifyJS.AST_String){
+            //如果是字符串
+            switch (TYPE){
+                case DEF_TYPES.CLASS_NAME:
+                    if(this._options.cssRenameMap){
+                        var rs = valueNode.value.split(/\s+/gi);
+                        var rsT = [];
+                        for(var i= 0,l=rs.length;i<l;i++){
+                            var item = rs[i];
+                            var rsItem = this._options.cssRenameMap[item];
+                            rsT.push(rsItem?rsItem:item);
+                        }
+                        if(rsT&&rsT.length>0){
+                            valueNode.value = rsT.join(" ");
+                        }
+                    };
+                    break;
+                case DEF_TYPES.SELECTOR:
+                    if(this._options.cssRenameMap){
+                        //console.log(valueNode.value);
+                        var rs = parser(valueNode.value);
+                        if(rs&&rs.length>0){
+                            var rsT = [];
+                            for(var i= 0,l=rs.length;i<l;i++){
+                                var item = rs[i];
+                                if(item&&item.type == "className"){
+                                    var text =this._options.cssRenameMap[item.text];
+                                    rsT.push("."+(text?text:item.text));
+                                }else{
+                                    rsT.push(item.text);
+                                }
+                                valueNode.value = rsT.join("");
+                            }
+
+                        }
+                    };
+                    break;
+                default :break;
+            }
+            //console.log(valueNode.value);
+        }else{
+            //返回调用另一个方法
+            //xnQuerySelector({expression})
+
+            var expression = new UglifyJS.AST_SymbolRef(this._defXnGetCSSName);
+            //console.log(expression);
+            //ast.def_function(expression);
+            var args = [valueNode];
+            var new_node = new UglifyJS.AST_Call({
+                expression:expression,
+                args:args,
+                start:valueNode.start,
+                end:valueNode.end,
+                scope:ast
+            });
+            console.log(valueNode.TYPE);
+            return new_node;
+
+        }
+    },
+    _checkElementReference:function(node,ast){
+        var expression = node.expression;
+        if(expression instanceof  UglifyJS.AST_Dot){
+            if(expression.expression){
+                var parentRef = ElementReference.hasOwnProperty(expression.expression.property);
+                if(parentRef&&parentRef[expression.property]){
+                    var rs = this._transClassValue(node.args[0],DEF_TYPES.CLASS_NAME,ast);
+                    if(rs){
+                        node.args[0] = rs;
+                    }
+                }
+            }
+        }
+    },
+    walkASTNode:function(node,descend,ast){
+        //console.log("\t",node.TYPE);
+        if(node instanceof UglifyJS.AST_Call){
+            //console.log(node.expression.TYPE);
+            //AST_SymbolRef
+            if(funNames.hasOwnProperty(node.expression.name)){
+                if(node.args && node.args.length>0){
+                    var rs = this._transClassValue( node.args[0],DEF_TYPES.SELECTOR,ast);
+                    if(rs){
+                        node.args[0] = rs;
+                    }
+                }
+            }
+            //AST_Dot
+            if(funNames.hasOwnProperty(node.expression.property)){
+                //console.log(node.expression.property,node.TYPE,node.args.length);
+                if(node.args && node.args.length>0){
+                    var rs = this._transClassValue( node.args[0],DEF_TYPES.SELECTOR,ast);
+                    if(rs){
+                        node.args[0] = rs;
+                    }
+                }
+            }
+            this._checkElementReference(node,ast);
+        }else if(node instanceof UglifyJS.AST_Dot){
+            if(attributeName[node.property]){
+                //console.log("\t",node.property,node.TYPE,node.expression);
+
+                //需要判断操作符，并区分是否是读写操作
+            }
+            //descend(node,ast);
+        }else if(node instanceof UglifyJS.AST_Assign){
+            if(node.left&& (node.left instanceof UglifyJS.AST_Dot)){
+                if(attributeName.hasOwnProperty(node.left.property)){
+                    //console.log(node.right.value);
+                    this._transClassValue( node.right,DEF_TYPES.CLASS_NAME,ast);
+                }
+            }
+        }else if(node instanceof UglifyJS.AST_SymbolDefun&&node.name == "xnGetCSSName"){
+            this._defXnGetCSSName = node;
+        }
+    }
+};
+
+module.exports.transCSSName = transCSSName;
+
+
+
+
+
+

@@ -3,7 +3,7 @@
  * 解析配置参数
  */
 var util = require("../util");
-var compiler = require("./transCommonJS").xncompiler();
+//var compiler = require("./transCommonJS").xncompiler();
 var fs = require("fs");
 
 

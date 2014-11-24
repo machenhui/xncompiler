@@ -54,6 +54,7 @@ function singleFilePackage(){
 
 singleFilePackage.prototype = {
     _init:function(options){
+        var that = this;
         this._options = util.extend({
             mainConfigFile:null,
             baseUrl:"./",
@@ -73,6 +74,10 @@ singleFilePackage.prototype = {
         this.namespacePrefix = "xnCompiler"+parseInt(100+parseInt(Math.random()*10000000));
         this.concatDepsFile(this._options.source,this._options.baseUrl,this._options.rjsOptions,function(content){
             //进行uglify2 压缩
+            //console.log(content);
+            if(options.__xnCallBack){
+                options.__xnCallBack(content);
+            }
         });
     },
     /**
@@ -91,7 +96,7 @@ singleFilePackage.prototype = {
         fs.writeFile(startFile,"(function(){if(typeof "+that.namespacePrefix+" == 'undefined'){var "+that.namespacePrefix+"={},"+that.namespacePrefix+"_cache={},"+that.namespacePrefix+"_g=(typeof window=='undefined'?global:window);}",null,function(){
             var config = extend({
                 baseUrl:rootPath,
-                logLevel:0,
+                logLevel:4,
                 mainConfigFile: that._options.mainConfigFile,
                 out:that._options.output,
                 //判断入口js 文件，是require 就用require,是define 就用define 进行合并

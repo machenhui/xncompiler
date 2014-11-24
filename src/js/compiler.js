@@ -5,7 +5,6 @@
  */
 
 var UglifyJS = require("uglify-js");
-
 function treeTransForm(fileName,content){
     var topLevelAST = null;
     topLevelAST = UglifyJS.parse(content,{

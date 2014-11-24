@@ -1,6 +1,4 @@
 
-
-
 var parser = function(source){
     var classNameStart = ".";
     var classNameEnd = [" ",":","["];
@@ -29,9 +27,7 @@ var parser = function(source){
                 isStart = true;
                 break;
             case " ":
-            case ":":
-            case "[":
-            case ",":
+            case ":":case "[": case ",":case ">":case "~":case "+":
                 if(className&&className!=""){
                     rsArray.push({
                         type:"className",
@@ -39,6 +35,7 @@ var parser = function(source){
                     })
                 }
                 className = null;
+                //保留字符，包括空格等任何格式，我们只处理能识别的css
                 otherStr +=char;
                 isStart = false;
                 break;

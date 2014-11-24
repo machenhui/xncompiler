@@ -7,7 +7,7 @@
  */
 
 'use strict';
-var main = require("../src/js/main");
+var singleFilePackage = require("../src/js/singleFilePackage").singleFilePackage;
 module.exports = function(grunt) {
 
   // Please see the Grunt documentation for more information regarding task
@@ -15,36 +15,16 @@ module.exports = function(grunt) {
 
   grunt.registerMultiTask('xncompiler', 'The best Grunt plugin ever.', function() {
     // Merge task-specific and/or target-specific options with these defaults.
-    var options = this.options({
-      punctuation: '.',
-      separator: ', '
-    });
-    main(options);
+    var done = this.async();
+    if(this.data){
+      this.data.__xnCallBack = function(data){
+        console.log(data.length);
+        done();
+      }
+    }
+    new singleFilePackage(this.data);
     // Iterate over all specified file groups.
-    this.files.forEach(function(f) {
-      // Concat specified files.
-      var src = f.src.filter(function(filepath) {
-        // Warn on and remove invalid source files (if nonull was set).
-        if (!grunt.file.exists(filepath)) {
-          grunt.log.warn('Source file "' + filepath + '" not found.');
-          return false;
-        } else {
-          return true;
-        }
-      }).map(function(filepath) {
-        // Read file source.
-        return grunt.file.read(filepath);
-      }).join(grunt.util.normalizelf(options.separator));
 
-      // Handle options.
-      src += options.punctuation;
-
-      // Write the destination file.
-      grunt.file.write(f.dest, src);
-
-      // Print a success message.
-      grunt.log.writeln('File "' + f.dest + '" created.');
-    });
   });
 
 };

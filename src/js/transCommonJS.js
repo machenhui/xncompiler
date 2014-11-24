@@ -48,37 +48,17 @@ var transCallBackReq = require("./transCMDRequire").transCallBack;
 var trimDefine = require("./compiler").trimDefine;
 
 
-/**
- * 处理Require 关键字 返回转换之后的源码
- * @param namespace
- * @param content
- * @returns code {String}
- */
-function rRequire(namespace,content){
-	
-	return code;
-}
-/**
- * 处理Define 关键字 返回转换之后的源码
- * @param namespace
- * @param content
- * @returns code {String}
- */
-function rDefine(namespace,content){
-	return code;
-}
-
-function xnParser(){
+/*function xnParser(){
 	this._init.apply(this,arguments);
 }
 
 xnParser.prototype = {
-		/**
+		*//**
 		 * 初始化方法
 		 * @param js {String} 指定入口js 文件
          * @param root {String} 指定requirejs 根路径
 		 * @param options 其他的一些配置文件
-		 */
+		 *//*
 		_init:function(js,root,options){
 			this.rootPath = root;
             this.mainJS = js;
@@ -104,12 +84,12 @@ xnParser.prototype = {
             }
             return rs;
         },
-		/**
+		*//**
 		 *  使用r.js 读取依赖分析，返回依赖的js 文件
 		 * @param jsFile
 		 * @param rootPath
 		 * @returns depsArray {Array}
-		 */
+		 *//*
         concatDepsFile:function(jsFile,rootPath,rjsOptions,successCallBack,errorCallBack){
             var that = this;
             var rootPath = STATIC_ROOT_PATH = rootPath?rootPath:"static/";
@@ -183,7 +163,7 @@ xnParser.prototype = {
             });
 
 		}
-};
+};*/
 
 function transCommonJSRead(contents,namespacePrefix,moduleName,path){
     var isRequire = contents.search(/require\s*\(\s*\[(.|\r\n)*\],\s*function\s*\(/gi)!=-1;
@@ -203,6 +183,9 @@ function transCommonJSWrite(contents,namespacePrefix,moduleName,path){
 exports.transCommonJSContentRead = transCommonJSRead;
 exports.transCommonJSContentWrite = transCommonJSWrite;
 
+
+
+
 //过滤目录，生成依赖分析表
 function transDirCommonJS(){
     this._init.apply(this,arguments);
@@ -215,6 +198,7 @@ transDirCommonJS.prototype = {
         this.relationMapOutput = options.relationMapOutput;
         this.namespacePrefix = options.namespacePrefix;
         this.baseUrl = options.baseUrl;
+        this.callBackFn = options.__xnCallBack;
         this.transDir();
     },
     transDir:function(){
@@ -224,25 +208,37 @@ transDirCommonJS.prototype = {
         dirWalker(this.baseUrl+Node_PATH.sep+this.source,function(filePath,fileData){
             filePath = filePath.replace(that.baseUrl+Node_PATH.sep,"").replace(/\\/gi,"/").replace(/\/{1,}/gi,"/");
             length++;
-            if(!that.fileStatsMap[filePath]){
-                var xnCompiler = new xnParser(filePath,that.baseUrl,{
-                    namespacePrefix:that.namespacePrefix,
-                    fileStatsMap :that.fileStatsMap,
-                    compileReady:function(){
-                        index++;
-                        if(index == length&&length>0){
-                            console.log(that.fileStatsMap);
-                        }
-                    }
+            var moduleName = filePath.replace(/\.js$/gi,"");
+            if(!that.fileStatsMap[moduleName]){
+                var isRequire = fileData.search(/require\s*\(\s*\[(.|\r\n)*\],\s*function\s*\(/gi)!=-1;
+                var rs = transCallBackReq(that.namespacePrefix,fileData,isRequire?null:moduleName,filePath,{
+                    returnDeps:true
                 });
+                rs.deps = that._resolveDeps(moduleName,rs.deps);
+                that.fileStatsMap[moduleName] = {modulename:moduleName,deps:rs.deps,rsString:rs.rsString};
             }else{
-                console.log(that.fileStatsMap[filePath]);
+                console.log(that.fileStatsMap[moduleName]);
             }
         })
+        if(this.callBackFn){
+            this.callBackFn(that.fileStatsMap);
+        }
+    },
+    _resolveDeps:function(moduleName,deps){
+        var rs = [];
+        for(var i = 0,l= deps.length;i<l;i++){
+            var item = deps[i];
+            if(item&&item.length>0){
+                var path = Node_PATH.resolve(Node_PATH.dirname(this.baseUrl+Node_PATH.sep+moduleName),item);
+                path = Node_PATH.relative(this.baseUrl,path);
+                rs.push(path.replace(/\\{1,}/gi,"/"));
+            }
+        }
+        return rs;
     }
 }
 
 exports.transDirCommonJS = transDirCommonJS;
-exports.xncompiler = function(){
+/*exports.xncompiler = function(){
     return xnParser;
-};
+};*/

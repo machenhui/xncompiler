@@ -79,6 +79,7 @@ conditionTrans.prototype = {
         this.globalDefineFile = options.globalDefineFile;
         this.source = options.source;
         this.output = options.output;
+        this.optimize = options.optimize?options.optimize:true;
         this.initConditionFile();
         var that = this;
         this._getSourceFiles(this.source,this.output,function(filePath,outputDir,fileData){
@@ -106,7 +107,11 @@ conditionTrans.prototype = {
                 }
             });
         }else if(stat.isDirectory()){
-            fs.readdir(inputDir,function(err,files){
+             fs.readdir(inputDir,function(err,files){
+                if(err){
+                    throw err;
+                    process.exit(-1);
+                }
                 files.forEach(function(item){
                     that._getSourceFiles(inputDir+path.sep+item,outputDir,callBackFn);
                 })
@@ -197,7 +202,7 @@ conditionTrans.prototype = {
             return node;
         });
         var transTree = topLevelAST.transform(deep_clone);
-        var content = transTree.print_to_string({beautify: true});
+        //var content = transTree.print_to_string({beautify: true});
         var compressor1 = UglifyJS.Compressor({
             warnings: false,
             if_return: true,
@@ -206,9 +211,15 @@ conditionTrans.prototype = {
             //beautify:false
         });
         //命名混淆
-        //transTree.mangle_names(true);
+        if(this.optimize&&this.optimize!="none"){
+            transTree.mangle_names(true);
+        }
         var compressed_ast2 = transTree.transform(compressor1);
-        content = compressed_ast2.print_to_string({beautify: true});
+        var beautify = true;
+        if(this.optimize&&this.optimize!="none"){
+            beautify = false;
+        }
+        var content = compressed_ast2.print_to_string({beautify: beautify});
         var newLength = content.length;
         //fs.writeFileSync(outputDir+path.sep+inputPath.replace(/\.js$/gi, "-dd.js"), content);
         writeFile(outputDir+path.sep+inputPath, content);

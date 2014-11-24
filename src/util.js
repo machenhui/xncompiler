@@ -35,21 +35,24 @@ function dirWalker(dirPath,visitFn){
     var stat = fs.statSync(dirPath);
     var that = this;
     if(stat.isFile()){
-        fs.readFile(dirPath,{encoding:"utf8"}, function (err, data) {
-            if (err){
-                throw err;
-                process.exit(-1);
-            }
+        var data = fs.readFileSync(dirPath,{encoding:"utf8"});
+        if(data){
             if(visitFn){
                 visitFn(dirPath,data);
             }
-        });
+        }else{
+            throw new Error("读取文件错误");
+            process.exit(-1);
+        }
     }else if(stat.isDirectory()){
-        fs.readdir(dirPath,function(err,files){
+        var files = fs.readdirSync(dirPath);
+        if(files){
             files.forEach(function(item){
                 dirWalker(dirPath+path.sep+item,visitFn);
             })
-        })
+        }else{
+            console.error("读取目录错误");
+        }
     }
 }
 
@@ -91,3 +94,103 @@ function writeFile(_path,content){
 }
 
 module.exports.writeFile = writeFile;
+
+
+var base54 = (function() {
+    var string = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$_0123456789";
+    var chars, frequency;
+    function reset() {
+        frequency = Object.create(null);
+        chars = string.split("").map(function(ch){ return ch.charCodeAt(0) });
+        chars.forEach(function(ch){ frequency[ch] = 0 });
+    }
+    base54.consider = function(str){
+        for (var i = str.length; --i >= 0;) {
+            var code = str.charCodeAt(i);
+            if (code in frequency) ++frequency[code];
+        }
+    };
+    base54.sort = function() {
+        chars = mergeSort(chars, function(a, b){
+            if (is_digit(a) && !is_digit(b)) return 1;
+            if (is_digit(b) && !is_digit(a)) return -1;
+            return frequency[b] - frequency[a];
+        });
+    };
+    base54.reset = reset;
+    reset();
+    base54.get = function(){ return chars };
+    base54.freq = function(){ return frequency };
+    function base54(num) {
+        var ret = "", base = 54;
+        do {
+            ret += String.fromCharCode(chars[num % base]);
+            num = Math.floor(num / base);
+            base = 64;
+        } while (num > 0);
+        return ret;
+    };
+    return base54;
+})();
+//去除大写字母
+var base54_xn = (function() {
+    var string = "abcdefghijklmnopqrstuvwxyz$_0123456789";
+    var chars, frequency;
+    function reset() {
+        frequency = Object.create(null);
+        chars = string.split("").map(function(ch){ return ch.charCodeAt(0) });
+        chars.forEach(function(ch){ frequency[ch] = 0 });
+    }
+    base54_xn.consider = function(str){
+        for (var i = str.length; --i >= 0;) {
+            var code = str.charCodeAt(i);
+            if (code in frequency) ++frequency[code];
+        }
+    };
+    base54_xn.sort = function() {
+        chars = mergeSort(chars, function(a, b){
+            if (is_digit(a) && !is_digit(b)) return 1;
+            if (is_digit(b) && !is_digit(a)) return -1;
+            return frequency[b] - frequency[a];
+        });
+    };
+    base54_xn.reset = reset;
+    reset();
+    base54_xn.get = function(){ return chars };
+    base54_xn.freq = function(){ return frequency };
+    function base54_xn(num) {
+        var ret = "", base = 26;
+        do {
+            ret += String.fromCharCode(chars[num % base]);
+            num = Math.floor(num / base);
+            base = 38;
+        } while (num > 0);
+        return ret;
+    };
+    return base54_xn;
+})();
+exports.base54_xn = base54_xn;
+
+
+
+var child_process = require('child_process');
+var fs = require('fs');
+
+function execSync(command) {
+// Run the command in a subshell
+    child_process.exec(command + ' 2>&1 1>output && echo done! > done');
+
+// Block the event loop until the command has executed.
+    while (!fs.existsSync('done')) {
+// Do nothing
+    }
+
+// Read the output
+    var output = fs.readFileSync('output');
+// Delete temporary files.
+    fs.unlinkSync('output');
+    fs.unlinkSync('done');
+
+    return output;
+}
+exports.execSync = execSync;

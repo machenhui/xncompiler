@@ -32,7 +32,9 @@
     "grunt-contrib-nodeunit": "^0.3.3",
     "grunt": "~0.4.5",
     "uglify-js":"~2.4.15",
-     "requirejs":"~2.1.15"
+     "requirejs":"~2.1.15",
+     "clean-css":"",
+    "htmlparser2":"~3.8.0"
   },
   "peerDependencies": {
     "grunt": "~0.4.5"

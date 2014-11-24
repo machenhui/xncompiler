@@ -1,6 +1,7 @@
 var UglifyJS = require("uglify-js");
 var fs = require("fs");
 var fileName = "./test/data/testAST.js";
+fileName = "./test/data/js/min.all.js";
 //fileName = "./test/data/media.js";
 var defineVarName = "./test/data/defineVar.js";
 var vm = require("vm");
@@ -16,10 +17,11 @@ globalDefAST = UglifyJS.parse(globalDefContent.toString(),{
 });
 globalDefAST.figure_out_scope();
 
-
+var transCSSName = new require("../src/js/xnTransCSSName").transCSSName;
+transCSSName = new transCSSName();
 //console.log(globalDefAST.find_variable("clouda"));
 var topLevelAST = null;
-topLevelAST = UglifyJS.parse(content.toString(),{
+topLevelAST = UglifyJS.parse(transCSSName.addFunText+content.toString(),{
     fileName:fileName,
     toplevel:topLevelAST
 });
@@ -72,27 +74,28 @@ var compressed_ast2 = topLevelAST.transform(compressor);
 content = compressed_ast2.print_to_string();
 var oldLength = content.length;
 console.log(oldLength);*/
+
 var deep_clone = new UglifyJS.TreeTransformer(function(node,descend){
-    console.log("\t",node.TYPE);
+    //console.log("\t",node.TYPE);
     switch(node.TYPE){
         case "VarDef":
-            console.log(node.name.name);
+            //console.log(node.name.name);
             break;
         case "SymbolVar":
-            console.log(node.name);
+            //console.log(node.name);
             break;
         case "ObjectKeyVal":
-            console.log(node.key);
+            //console.log(node.key);
             break;
         case "SymbolRef":
-            console.log(node.name,node.TYPE);
+            //console.log(node.name,node.TYPE);
             break;
         case "Dot":
-            console.log(node.property,node.TYPE);
+            //console.log(node.property,node.TYPE);
             var parent = deep_clone.parent();
             var rs = findClouda(node);
             if(rs !=null && parent instanceof UglifyJS.AST_Assign) {
-                console.error("代码中不能对常量进行定义", node);
+                //console.error("代码中不能对常量进行定义", node);
                 process.exit(-1);
             }else if(rs != null){
                 return new UglifyJS.AST_Number({
@@ -112,9 +115,12 @@ var deep_clone = new UglifyJS.TreeTransformer(function(node,descend){
             //console.log(node.TYPE);
             break;
     }
+
+    transCSSName.walkASTNode(node,descend,topLevelAST);
     descend(node, this);
     return node;
 });
+
 var transTree = topLevelAST.transform(deep_clone);
 content = transTree.print_to_string({ beautify: true });
 //console.log(topLevelAST.globals._values['$clouda'].references);
@@ -129,14 +135,15 @@ var compressor1 = UglifyJS.Compressor({
 //命名混淆
 transTree.mangle_names(true);
 var compressed_ast2 = transTree.transform(compressor1);
-content = compressed_ast2.print_to_string({beautify:false});
+content = compressed_ast2.print_to_string({beautify:true});
 var newLength = content.length;
 fs.writeFileSync(fileName.replace(/\.js$/gi,"-dd.js"),content);
 var scopeBody = transTree.find_variable("clouda");
-console.log("====================================print_start");
+//console.log("====================================print_start");
 //console.log(transTree.globals._values);
-console.log(scopeBody.scope.body);
-console.log("=======================",scopeBody.scope.body.length);
+//console.log(scopeBody.scope.body);
+//console.log("=======================",scopeBody.scope.body.length);
+return;
 for(var i= 0,l=scopeBody.scope.body.length;i<l;i++){
     var item = scopeBody.scope.body[i];
     if(item instanceof UglifyJS.AST_Var){

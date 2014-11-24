@@ -17,11 +17,12 @@ globalDefAST = UglifyJS.parse(globalDefContent.toString(),{
 });
 globalDefAST.figure_out_scope();
 
-var transCSSName = new require("../src/js/xnTransCSSName").transCSSName;
-transCSSName = new transCSSName();
+//var transCSSName = new require("../src/js/xnTransCSSName").transCSSName;
+//transCSSName = new transCSSName();
 //console.log(globalDefAST.find_variable("clouda"));
 var topLevelAST = null;
-topLevelAST = UglifyJS.parse(transCSSName.addFunText+content.toString(),{
+//transCSSName.addFunText+
+topLevelAST = UglifyJS.parse(content.toString(),{
     fileName:fileName,
     toplevel:topLevelAST
 });
@@ -116,7 +117,7 @@ var deep_clone = new UglifyJS.TreeTransformer(function(node,descend){
             break;
     }
 
-    transCSSName.walkASTNode(node,descend,topLevelAST);
+    //transCSSName.walkASTNode(node,descend,topLevelAST);
     descend(node, this);
     return node;
 });

@@ -64,7 +64,6 @@ cssRename.prototype = {
         var tokenT = token(trimData,context);
         var cssAST = tokenT.process();
         if(callBackFn){
-            console.log(cssAST);
             callBackFn(cssAST);
         }
     },

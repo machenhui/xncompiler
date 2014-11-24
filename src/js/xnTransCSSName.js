@@ -43,19 +43,57 @@ transCSSName.prototype = {
     _init:function(options){
         this._options = util.extend({
             cssRenameMap:null,//指定cssRenameMap
-            src:null //指定原文件
+            src:null ,//指定原文件,
+            output:null
         },options);
-        this._options.cssRenameMap = {
+        /*this._options.cssRenameMap = {
             "ttttt":"a",
             "ddd":"b",
             "ddddd":"c",
             "dddd":"e",
             "dddddddddddd":"f"
-        };
-        var sourceMapText = fs.readFileSync("./build/index.css.map.json");
+        };*/
+        /*var sourceMapText = fs.readFileSync("./build/index.css.map.json");*/
+        var sourceMapText = fs.readFileSync(this._options.cssRenameMap);
         this._options.cssRenameMap = JSON.parse(sourceMapText);
         var sourceMapText ="var xnCSSRenameMap="+sourceMapText;
-        this.addFunText = this._initFunText(sourceMapText,xnCSSParser)
+        this.addFunText = this._initFunText(sourceMapText,xnCSSParser);
+        var content = this._transSourceFile(this._options.src,this.addFunText);
+        if(this._options.output){
+            util.writeFile(this._options.output,content);
+        }else{
+            console.log(content);
+        }
+    },
+    _transSourceFile:function(filePath,addFunText){
+        var that = this;
+        var fileContent = fs.readFileSync(filePath,{encoding:"utf8"});
+        var topLevelAST = null;
+        topLevelAST = UglifyJS.parse(addFunText+fileContent.toString(),{
+            fileName:filePath,
+            toplevel:topLevelAST
+        });
+        topLevelAST.figure_out_scope();
+        var deep_clone = new UglifyJS.TreeTransformer(function(node,descend){
+            that.walkASTNode(node,descend,topLevelAST);
+            descend(node, this);
+            return node;
+        });
+
+        var transTree = topLevelAST.transform(deep_clone);
+        var content = transTree.print_to_string({ beautify: true });
+        return content;
+        /*var compressor1 = UglifyJS.Compressor({
+            warnings:false,
+            if_return:true,
+            unsafe:true,
+            unsafe_comps:true
+            //beautify:false
+        });
+        //命名混淆
+        transTree.mangle_names(true);
+        var compressed_ast2 = transTree.transform(compressor1);
+        content = compressed_ast2.print_to_string({beautify:true});*/
     },
     _initFunText:function(sourceMapText,xnCSSParser){
         var xnGetCSSNameFunText = fs.readFileSync(Node_Path.dirname(module.filename.replace(/\\/gi,"/"))+"/jsLib/xnGetCSSName.js");
@@ -122,7 +160,7 @@ transCSSName.prototype = {
                 end:valueNode.end,
                 scope:ast
             });
-            console.log(valueNode.TYPE);
+            //console.log(valueNode.TYPE);
             return new_node;
 
         }

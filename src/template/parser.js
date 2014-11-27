@@ -5,7 +5,7 @@
 var fs = require("fs");
 var htmlparser = require("htmlparser2");
 var util = require("../util");
-
+var getTplDeps = require("./deps").getTplDeps;
 
 function templateParser(){
     this._init.apply(this,arguments);
@@ -16,7 +16,9 @@ templateParser.prototype = {
         this._options = util.extend({
             source:"",//模板路径,指定模板目录或文件
             output:"", //指明输出路径，或者输出的文件，
-            cssRenameMap:null //指明css 重命名配置文件
+            cssRenameMap:null, //指明css 重命名配置文件
+            transCommonJS:null,
+            commonJSPrefix:"template/"
         },options);
         this.cssFunctionStart = "$$_cssFunctionStart_$$";
         this.cssFunctionEnd = "$$_cssFunctionEnd_$$";
@@ -26,7 +28,7 @@ templateParser.prototype = {
 
         var rs = this.transTpl(this._options.source);
         this.compileTpl(rs.source,rs.selectors);
-        this.transTplJS(this._options.output);
+        this.transTplJS(this._options.output,rs.tplDeps);
         if(this._options.__xnCallBack){
             this._options.__xnCallBack();
         }
@@ -72,6 +74,7 @@ templateParser.prototype = {
     transTpl:function(tplPath){
         var that = this;
         var testStr = fs.readFileSync(tplPath,{encoding:"utf8"});
+        var tplDeps = getTplDeps(testStr);
         var nodeArray = [];
         var parser = new htmlparser.Parser({
             onopentag: function(name, attribs){
@@ -101,7 +104,8 @@ templateParser.prototype = {
         parser.end();
         return {
             source:testStr,
-            selectors:nodeArray
+            selectors:nodeArray,
+            tplDeps:tplDeps
         }
     },
     compileTpl:function(source,nodeArray){
@@ -117,7 +121,8 @@ templateParser.prototype = {
             }
         }
         util.writeFile(this._options.output+".soy",rsStr);
-        var command ='java -jar ../lightappfront/0/node_modules/grunt-closure-template/lib/SoyToJsSrcCompiler.jar  --codeStyle concat --cssHandlingScheme REFERENCE --outputPathFormat '+this._options.output+'  '+this._options.output+".soy";
+        //--shouldProvideRequireSoyNamespaces
+        var command ='java -jar ../lightappfront/0/node_modules/grunt-closure-template/lib/SoyToJsSrcCompiler.jar   --codeStyle concat --cssHandlingScheme REFERENCE --outputPathFormat '+this._options.output+'  '+this._options.output+".soy";
         util.execSync(command);
     },
     _createCSSWrapper:function(funName,nameMap){
@@ -129,16 +134,34 @@ templateParser.prototype = {
             "}" +
             "return rs.join(' ');" +
             "}";
-        funText +=";\r\nconsole.log(xnGetCssName(\"baiduServiceBottomBar\"));";
+        //funText +=";\r\nconsole.log(xnGetCssName(\"baiduServiceBottomBar\"));";
         return rs+"\r\n"+funText;
 
     },
-    transTplJS:function(outputPath){
+    _createCommonJSWrapper:function(deps,content){
+        if(!this._options.transCommonJS){
+            return content;
+        }
+        var rs = [];
+        rs.push("define([],function(){");
+        var requires = [];
+        for(var i= 0,l=deps.deps.length;i<l;i++){
+            var item = deps.deps[i];
+            requires.push(item+"=require(\""+this._options.commonJSPrefix+item.replace(/\./gi,"/")+"\");");
+        }
+        rs.push(content);
+        rs = rs.concat(requires);
+        rs.push("return "+deps.namespace+deps.tplName+";");
+        rs.push("})");
+        return rs.join("\r\n");
+    },
+    transTplJS:function(outputPath,deps){
         var content = fs.readFileSync(outputPath);
         var funName = "xnGetCssName";
         var cssWrapper = this._createCSSWrapper(funName,this.cssNameMap);
         var outputFileContent = content.toString();
         outputFileContent = outputFileContent.replace(this.cssFunctionStart,"'+"+funName+"('").replace(this.cssFunctionEnd,"')+'");
+        outputFileContent = this._createCommonJSWrapper(deps,outputFileContent);
         fs.writeFileSync(outputPath,cssWrapper+";\r\n"+outputFileContent);
     }
 }

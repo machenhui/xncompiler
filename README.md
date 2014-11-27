@@ -40,3 +40,9 @@ grunt.initConfig({
 #### soy 模板编译，支持nodejs 环境，并支持css命名混淆
 #### 指定cssRenameMap 去除js 文件中有关css 命名的引用
 
+
+###TODO
+ 1 模板编译压缩工具的集成
+ 2.功能模块组件的拆分
+
+

@@ -69,6 +69,13 @@ module.exports = function(grunt) {
         cssRenameMap:"build/index.css.map.json"
       }
     },
+    xnEnvMake:{
+      test:{
+        source:"test/data/soy/test.soy",
+        output:"./build/test/data/soy/test.js",
+        cssRenameMap:"build/index.css.map.json"
+      }
+    },
     // Unit tests.
     nodeunit: {
       tests: ['test/*_test.js']

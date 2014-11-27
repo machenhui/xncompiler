@@ -6,7 +6,7 @@ var fs = require("fs");
 var htmlparser = require("htmlparser2");
 var util = require("../util");
 var getTplDeps = require("./deps").getTplDeps;
-
+var NPath = require("path");
 function templateParser(){
     this._init.apply(this,arguments);
 }
@@ -127,9 +127,9 @@ templateParser.prototype = {
             util.writeFile(this._options.output+".soy",rsStr);
             sourceFile = this._options.output+".soy";
         }
-
+        var libPath = NPath.dirname(module.filename).replace(/\\+/gi,"/")+"/lib/SoyToJsSrcCompiler.jar";
         //--shouldProvideRequireSoyNamespaces
-        var command ='java -jar ../lightappfront/0/node_modules/grunt-closure-template/lib/SoyToJsSrcCompiler.jar   --codeStyle concat --cssHandlingScheme REFERENCE --outputPathFormat '+this._options.output+'  '+sourceFile;
+        var command ='java -jar '+libPath+'   --codeStyle concat --cssHandlingScheme REFERENCE --outputPathFormat '+this._options.output+'  '+sourceFile;
         util.execSync(command);
     },
     _createCSSWrapper:function(funName,nameMap){

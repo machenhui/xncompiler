@@ -71,9 +71,8 @@ module.exports = function(grunt) {
     },
     xnEnvMake:{
       test:{
-        source:"test/data/soy/test.soy",
-        output:"./build/test/data/soy/test.js",
-        cssRenameMap:"build/index.css.map.json"
+        moduleName:"envTestDir",//grunt 传入myDev 文件中的moduleName
+        staticRoot:"test/"
       }
     },
     // Unit tests.

@@ -25,7 +25,6 @@ templateParser.prototype = {
         if(this._options.cssRenameMap){
             this.cssNameMap = JSON.parse(fs.readFileSync(this._options.cssRenameMap).toString());
         }
-
         var rs = this.transTpl(this._options.source);
         this.compileTpl(rs.source,rs.selectors);
         this.transTplJS(this._options.output,rs.tplDeps);
@@ -49,6 +48,9 @@ templateParser.prototype = {
         return classNames.join(" ");
     },
     _getCSSName:function(contentStr){
+        if(!this.cssNameMap){
+            return contentStr;
+        }
         if(contentStr.search(/\{/gi)!=-1){
             return this.cssFunctionStart+contentStr+this.cssFunctionEnd;
         }else{
@@ -109,23 +111,31 @@ templateParser.prototype = {
         }
     },
     compileTpl:function(source,nodeArray){
-        var rsStr = "";
-        var sourceStr = source.toString();
-        for(var l= nodeArray.length;l--;){
-            var node = nodeArray[l];
-            var rs = this._replaceHtmlEL(sourceStr,node);
-            rsStr = rs.end+rsStr;
-            sourceStr = rs.before;
-            if(!l){
-                rsStr = rs.before+rsStr;
+        var sourceFile = this._options.source;
+        if(this._options.cssRenameMap){
+            var rsStr = "";
+            var sourceStr = source.toString();
+            for(var l= nodeArray.length;l--;){
+                var node = nodeArray[l];
+                var rs = this._replaceHtmlEL(sourceStr,node);
+                rsStr = rs.end+rsStr;
+                sourceStr = rs.before;
+                if(!l){
+                    rsStr = rs.before+rsStr;
+                }
             }
+            util.writeFile(this._options.output+".soy",rsStr);
+            sourceFile = this._options.output+".soy";
         }
-        util.writeFile(this._options.output+".soy",rsStr);
+
         //--shouldProvideRequireSoyNamespaces
-        var command ='java -jar ../lightappfront/0/node_modules/grunt-closure-template/lib/SoyToJsSrcCompiler.jar   --codeStyle concat --cssHandlingScheme REFERENCE --outputPathFormat '+this._options.output+'  '+this._options.output+".soy";
+        var command ='java -jar ../lightappfront/0/node_modules/grunt-closure-template/lib/SoyToJsSrcCompiler.jar   --codeStyle concat --cssHandlingScheme REFERENCE --outputPathFormat '+this._options.output+'  '+sourceFile;
         util.execSync(command);
     },
     _createCSSWrapper:function(funName,nameMap){
+        if(!nameMap){
+            return ;
+        }
         var rs = "var tplCSSNameMap="+JSON.stringify(nameMap)+";";
         var funText = "function "+funName+"(className){var rs=className.split(/\\s+/gi);for(var l=rs.length;l--;){" +
             "if(tplCSSNameMap[rs[l]]){" +
@@ -162,7 +172,7 @@ templateParser.prototype = {
         var outputFileContent = content.toString();
         outputFileContent = outputFileContent.replace(this.cssFunctionStart,"'+"+funName+"('").replace(this.cssFunctionEnd,"')+'");
         outputFileContent = this._createCommonJSWrapper(deps,outputFileContent);
-        fs.writeFileSync(outputPath,cssWrapper+";\r\n"+outputFileContent);
+        fs.writeFileSync(outputPath,(cssWrapper?cssWrapper+";\r\n":"")+outputFileContent);
     }
 }
 

@@ -35,20 +35,22 @@ envInit.prototype = {
     },
     _compileFile:function(){
         this.mainSoyPath = NPath.dirname(module.filename)+"/tpl/mainJS.soy";
-        var templateParser = new templateParser({
+        this.mainSoyPath = NPath.relative(".",this.mainSoyPath).replace(/\\+/gi,"/");
+        new templateParser({
             source:this.mainSoyPath,
             output:this.mainSoyPath+".js"
         });
-
         this.indexHTMLSoyPath = NPath.dirname(module.filename)+"/tpl/index.soy";
-        var templateParser = new templateParser({
-            source:this.indexHTMLSoyPath,
+        new templateParser({
+            source:NPath.relative(".",this.indexHTMLSoyPath),
             output:this.indexHTMLSoyPath+".js"
         });
+        this.soyutiljs = NPath.dirname(module.filename)+"/tpl/soyutils.js";
+        vm.runInThisContext(fs.readFileSync(this.soyutiljs).toString());
     },
     _writeSeedJS: function () {
         var moduleName = this._options.moduleName;
-        var seedJSContent = seedContent.replace(moduleNameVar,moduleName);
+        var seedJSContent = seedContent.toString().replace(moduleNameVar,moduleName);
         util.writeFile(this._options.staticRoot+"/"+moduleName+"/js/seed.js",seedJSContent);
     },
     _writeMainJS:function(){
@@ -71,7 +73,7 @@ envInit.prototype = {
         var mainPath = this.indexHTMLSoyPath;
         var mainJSPath = mainPath+".js";
         var code = fs.readFileSync(mainJSPath);
-        vm.runInThisContext(code);
+        vm.runInThisContext(code.toString());
         var indexHTML = tpl.tools.indexHTML({moduleName:this._options.moduleName});
         util.writeFile(this._options.staticRoot+"/"+this._options.moduleName+"/index.html",indexHTML);
         fs.unlinkSync(mainJSPath);

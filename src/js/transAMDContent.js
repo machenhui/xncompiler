@@ -56,11 +56,11 @@ function defineTemplate(namespace,moduleName,runContent){
     var tpl = "{namespace}.__defineGetter__(\"{moduleName}\",function(){" +
        // "if(!{namespace}_cache){{namespace}_cache={}}" +
         "if(!{namespace}_cache[\"{moduleName}\"]){" +
-        "{namespace}_cache[\"{moduleName}\"] = {runContent}" +
+        "{namespace}_cache[\"{moduleName}\"] = "+runContent+"" +
         "}" +
         "return {namespace}_cache[\"{moduleName}\"];" +
         "})"
-    return tpl.replace(/\{namespace\}/gi,namespace).replace(/\{moduleName\}/gi,moduleName).replace(/\{runContent\}/gi,runContent);
+    return tpl.replace(/\{namespace\}/gi,namespace).replace(/\{moduleName\}/gi,moduleName);//TODO 编译soyutils 时 正则替换出错 .replace(/\{runContent\}/gi,runContent);
 }
 
 module.exports.transDefine = function(namespace,moduleName,content,filePath){

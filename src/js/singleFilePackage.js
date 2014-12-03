@@ -10,41 +10,11 @@ var extend = require("./../util.js").extend;
 var fs = require("fs");
 var Node_PATH = require("path");
 
-var moduleNameSpateStr="_$_";
+
 
 var STATIC_ROOT_PATH;
-/**
- * 根据规则转换模块名称为变量
- * @param moduleName
- * @returns {String}
- */
-function getModuleName(moduleName,filePath){
-    if(filePath&&moduleName.search(/^\./gi)!=-1){
-        //解决相对路径
-        filePath = filePath.replace(/\w*\.js$/gi,"");
-        var path = Node_PATH.resolve(filePath,moduleName);
-        var rootPATH = Node_PATH.resolve("./"+STATIC_ROOT_PATH);
-        if(rootPATH&&path){
-            moduleName = path.replace(rootPATH,"").replace(/\\/gi,"/").replace(/^\//gi,"");
-            //console.log(moduleName.replace(/\.js$/gi,""));
-        }
-    }
-    return moduleName.replace(/\.js$/gi,"").replace(/\//gi,moduleNameSpateStr);
-}
-var moduleNameShotName = {};
-var index=0;
-exports.getModulePath = function(namespace,moduleName,filePath){
-    var key = moduleNameSpateStr+getModuleName(moduleName,filePath);
-    if(!moduleNameShotName[key]){
-        moduleNameShotName[key] = "a"+(index++);
-    }
-    return moduleNameShotName[key];
-    //return key;
-};
 
-var transRequire = require("./transAMDContent").transRequire;
-var transDefine = require("./transAMDContent").transDefine;
-var transCallBackReq = require("./transCMDRequire").transCallBack;
+
 var trimDefine = require("./compiler").trimDefine;
 
 
@@ -92,7 +62,8 @@ singleFilePackage.prototype = {
         var outputDirName = Node_PATH.dirname(this._options.output);
         var startFile=outputDirName+"/tmpStart.js";
         var endFile = outputDirName+"/tmpEnd.js";
-        fs.writeFileSync(endFile,"})();",{encoding:"utf8"});
+        //fs.writeFileSync(endFile,"})();",{encoding:"utf8"});
+        util.writeFile(endFile,"})();");
         fs.writeFile(startFile,"(function(){if(typeof "+that.namespacePrefix+" == 'undefined'){var "+that.namespacePrefix+"={},"+that.namespacePrefix+"_cache={},"+that.namespacePrefix+"_g=(typeof window=='undefined'?global:window);}",null,function(){
             var config = extend({
                 baseUrl:rootPath,

@@ -67,6 +67,11 @@ module.exports = function(grunt) {
         source:"test/data/soy/test.soy",
         output:"./build/test/data/soy/test.js",
         cssRenameMap:"build/index.css.map.json"
+      },
+      test1:{
+        sourceDir:"test/data/soy/",
+        /*outputDir:"./build/test/data/soy/",*/
+        cssRenameMap:"build/index.css.map.json"
       }
     },
     xnEnvMake:{
@@ -96,5 +101,7 @@ module.exports = function(grunt) {
 
   // By default, lint and run all tests.
   grunt.registerTask('default', ['jshint', 'test']);
+
+
 
 };

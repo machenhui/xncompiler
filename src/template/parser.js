@@ -152,9 +152,13 @@ templateParser.prototype = {
         if(!this._options.transCommonJS){
             return content;
         }
+        //TODO 提供 soyutils 路径
+        if(!this._options.soyToolPath){
+            console.error("请配置soyToolPath路径,默认位置lib/soyutils");
+        }
         var rs = [];
         rs.push("define([],function(){");
-        var requires = [];
+        var requires = ["var soy = require(\""+this._options.soyToolPath+"\");"];
         for(var i= 0,l=deps.deps.length;i<l;i++){
             var item = deps.deps[i];
             requires.push(item+"=require(\""+this._options.commonJSPrefix+item.replace(/\./gi,"/")+"\");");

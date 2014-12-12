@@ -22,14 +22,34 @@ grunt.loadNpmTasks('grunt-xncompiler');
 
 ### Overview
 In your project's Gruntfile, add a section named `xncompiler` to the data object passed into `grunt.initConfig()`.
-
+ 
 ```js
 grunt.initConfig({
+  
+  ...
+
   xncompiler: {
+
     your_target: {
       // Target-specific file lists and/or options go here.
-    },
+      
+      // 根目录
+      baseUrl: "test/blendUI/",
+      
+	  // 入口文件
+	  source: "src/web/main.js",
+      
+	  // requirejs 配置文件
+	  mainConfigFile: "test/blendUI/require.config.js",
+      
+	  // 输出目录
+	  output: "./build/"
+    }
+  
   },
+
+  ...
+  
 });
 ```
 

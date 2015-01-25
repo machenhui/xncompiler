@@ -1,7 +1,7 @@
 {
   "name": "grunt-xncompiler",
   "description": "The best Grunt plugin ever.",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha",
   "homepage": "https://github.com/machenhui/xncompiler",
   "author": {
     "name": "machenhui",

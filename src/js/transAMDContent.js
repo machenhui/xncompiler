@@ -60,7 +60,8 @@ function defineTemplate(namespace,moduleName,runContent){
         "}" +
         "return {namespace}_cache[\"{moduleName}\"];" +
         "})"
-    return tpl.replace(/\{namespace\}/gi,namespace).replace(/\{moduleName\}/gi,moduleName);//TODO 编译soyutils 时 正则替换出错 .replace(/\{runContent\}/gi,runContent);
+    return tpl.replace(/\{namespace\}/gi,namespace).replace(/\{moduleName\}/gi,moduleName);
+    //TODO 编译soyutils 时 正则替换出错 .replace(/\{runContent\}/gi,runContent);
 }
 
 module.exports.transDefine = function(namespace,moduleName,content,filePath){

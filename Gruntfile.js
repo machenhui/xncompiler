@@ -55,12 +55,19 @@ module.exports = function(grunt) {
       }
     },
     xnCSSRename:{
-      test:{
-        src:"test/data/css/index.css",
-        mangleNameOutputFile:"build/index.css.map.json",
-        output:"./build/test/data/css/index.css",
-        cssNamePrefix:"wa-ticket-"
-      }
+        test: {
+            //src: "test/data/css/test2.css",
+            src: "test/data/css/webkit.html.css",
+            mangleNameOutputFile: "build/index.css.map.json",
+            output: "./build/test/data/css/webkit.html.css",
+            cssNamePrefix: "wa-ticket-"
+        },
+        test1: {
+            src: "test/data/css/index.css",
+            mangleNameOutputFile: "build/index.css.map.json",
+            output: "./build/test/data/css/webkit.html.css",
+            cssNamePrefix: "wa-ticket-"
+        }
     },
     xnTemplateParser:{
       test:{
@@ -101,5 +108,7 @@ module.exports = function(grunt) {
 
   // By default, lint and run all tests.
   grunt.registerTask('default', ['jshint', 'test']);
+
+    grunt.registerTask("test1",['xnCSSRename:test'])
 
 };

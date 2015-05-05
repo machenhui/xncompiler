@@ -7,7 +7,7 @@ var token = require("./token");
 var parser = require("./selectorParser");
 var util = require("../util");
 var fs = require("fs");
-
+var transHTMLTagName = require("./TransHtmlTag");
 
 /**
  * cssAST 为一个数组
@@ -20,7 +20,7 @@ var fs = require("fs");
 
 
 
-
+var htmlTagBackList = {"input":1}
 
 
 //console.log(astToString(cssAST));
@@ -72,9 +72,10 @@ cssRename.prototype = {
             var item = cssAST[i];
             if(item&&item.selector){
                 var sAST = parser(item.selector);
-                var sStr = this._transSASTtoString(sAST);
+                var sStr = this._transSASTtoString(sAST.tokenArray);
                 if(sStr != item.selector){
                     //console.log(item.selector);
+                    //console.log(item.selector,"~~~~~~~~~~~~~~~~~~~",sStr);
                     item.selector = sStr;
                 }
                 //console.log(Object.prototype.toString.apply(item.body));
@@ -83,7 +84,7 @@ cssRename.prototype = {
                     this._transSelector(item.body);
                 }else{
                     //console.log(Object.prototype.toString.apply(item));
-                    //console.log(item);
+                    console.log("-----",item);
                 }
             }
         }
@@ -105,8 +106,20 @@ cssRename.prototype = {
             if(item.type == "className"){
                 //rs.push("."+item.text);
                 rs.push("."+this._strNum(item.text));
-            }else{
+            }else if(item.type == "htmlTag"){
+                //if(item.text = "isindex"){
+                    console.log(item,htmlTagBackList[item.text]?item.text:transHTMLTagName(item.text));
+                //}
+                rs.push(htmlTagBackList[item.text]?item.text:transHTMLTagName(item.text));
+            }else if(item.type == "other"){
                 rs.push(item.text);
+            }else if(item.type == "subScope"){
+                if(item.data){
+                    var _rs = this._transSASTtoString(item.data);
+                    rs.push("("+_rs+")");
+                }
+            }else{
+                console.log("unKnowType",item);
             }
         }
         return rs.join("");
@@ -123,6 +136,7 @@ cssRename.prototype = {
                     rs.push(item.block+"{"+this.astToString(item.body)+"}");
                 }else{
                     rs.push(item);
+                    console.log(item,"=========");
                 }
             }
             return rs.join("\r\n");

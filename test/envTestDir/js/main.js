@@ -1,0 +1,1 @@
+define([],function(){console.log("欢迎");})

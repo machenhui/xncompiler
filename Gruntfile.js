@@ -60,7 +60,8 @@ module.exports = function(grunt) {
             src: "test/data/css/webkit.html.css",
             mangleNameOutputFile: "build/index.css.map.json",
             output: "./build/test/data/css/webkit.html.css",
-            cssNamePrefix: "wa-ticket-"
+            cssNamePrefix: "wa-ticket-",
+            cssHTMLTagPrefix:"xn-test"
         },
         test1: {
             src: "test/data/css/index.css",

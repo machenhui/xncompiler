@@ -122,21 +122,9 @@ var parser = function(source,_rootNode){
             currentNode.appendChild(option.children);
         }
 
-        if(currentNode){
+        if(currentNode) {
             rootNode.appendChild(currentNode);
         }
-        return;
-        if(option && option.type == SelectorToken.CSS_NODE_TYPE.SCOPE_NODE && option.children){
-            console.log(currentNode);
-            console.log("--------------up currentNode-------------------");
-            console.log(option.children);
-            console.log("======up option children=========");
-            console.log(rootNode);
-            console.log("=====++++++++++++++up rootNode +++++++++++==========");
-            console.log("=====+++++++++++++++++++++++++==========");
-            console.log("=====+++++++++++++++++++++++++==========");
-        }
-
 
         //var e = new Error();
         //console.log(e.stack)
@@ -292,7 +280,6 @@ function test(){
     }else{
         console.log("error!!!",rs);
     }
-
 
     var rs = parser(".map-info-content.hSlider .hSliderItem");
     if(rs&&rs.length == 4&&rs[0].text == "map-info-content"&&rs[1].text == "hSlider"&&rs[2].text == " "&&rs[3].text == "hSliderItem"){

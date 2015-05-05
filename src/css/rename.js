@@ -37,8 +37,14 @@ cssRename.prototype = {
             src:"", //css 原文件
             mangleNameOutputFile:null, //命名混淆map输出文件
             output:"",
-            cssNamePrefix:""
+            cssNamePrefix:"",
+            cssHTMLTagPrefix:"xnCSS",
+            cssHTMLTagBackList:[]
         },options);
+        transHTMLTagName.setPrefix(this._options.cssHTMLTagPrefix);
+        this._options.cssHTMLTagBackList.forEach(function(item,index,array){
+            htmlTagBackList[item] = 1;
+        });
         this.sourceMap = {};
         this.cssNameIndex = 0;
         util.base54_xn.reset();
@@ -84,7 +90,7 @@ cssRename.prototype = {
                     this._transSelector(item.body);
                 }else{
                     //console.log(Object.prototype.toString.apply(item));
-                    console.log("-----",item);
+                    //console.log(item);
                 }
             }
         }
@@ -108,7 +114,7 @@ cssRename.prototype = {
                 rs.push("."+this._strNum(item.text));
             }else if(item.type == "htmlTag"){
                 //if(item.text = "isindex"){
-                    console.log(item,htmlTagBackList[item.text]?item.text:transHTMLTagName(item.text));
+                    //console.log(item,htmlTagBackList[item.text]?item.text:transHTMLTagName(item.text));
                 //}
                 rs.push(htmlTagBackList[item.text]?item.text:transHTMLTagName(item.text));
             }else if(item.type == "other"){
@@ -136,7 +142,7 @@ cssRename.prototype = {
                     rs.push(item.block+"{"+this.astToString(item.body)+"}");
                 }else{
                     rs.push(item);
-                    console.log(item,"=========");
+                    //console.log(item,"=========");
                 }
             }
             return rs.join("\r\n");

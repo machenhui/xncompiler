@@ -1,0 +1,12 @@
+{namespace xnTpl.template}
+/**
+ * @param cssNamePrefix
+ * @param htmlBodyString
+ */
+{template .warpper}
+    <div class="{$cssNamePrefix}-html">
+        <div class="{$cssNamePrefix}-body">
+            {$htmlBodyString}
+        </div>
+    </div>
+{/template}

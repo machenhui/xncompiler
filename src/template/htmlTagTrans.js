@@ -5,3 +5,7 @@
  * 指定浏览器 默认的css
  *
  */
+
+module.exports = {
+    trans:function(tagName){return "xnCSSName-"+tagName}
+}

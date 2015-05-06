@@ -110,6 +110,8 @@ module.exports = function(grunt) {
   // By default, lint and run all tests.
   grunt.registerTask('default', ['jshint', 'test']);
 
-    grunt.registerTask("test1",['xnCSSRename:test'])
+    grunt.registerTask("test1",['xnCSSRename:test']);
+
+    grunt.registerTask("test2",['xnTemplateParser:test'])
 
 };

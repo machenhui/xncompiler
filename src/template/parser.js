@@ -7,6 +7,7 @@ var htmlparser = require("htmlparser2");
 var util = require("../util");
 var getTplDeps = require("./deps").getTplDeps;
 var NPath = require("path");
+var htmlTagTrans = require("./htmlTagTrans");
 function templateParser(){
     this._init.apply(this,arguments);
 }
@@ -65,13 +66,36 @@ templateParser.prototype = {
      * 将找到class 的el 元素，进行替换
      */
     _replaceHtmlEL:function(sourceText,node){
-        var startStr = sourceText.substring(0,node.startIndex);
-        var endStr = sourceText.substring(node.endIndex);
+        if(node.isCloseTag){
+            //console.log(node,sourceText.substring(node.tagStarIndex,node.tagEndIndex));
+            var startStr = sourceText.substring(0,node.tagStarIndex);
+            var endStr = sourceText.substring(node.tagEndIndex);
 
-        return {
-            before:startStr,
-            end:this._transNode(node)+endStr
-        };
+            return {
+                before:startStr,
+                end:"div "+endStr
+            };
+        }else{
+            var startStr = sourceText.substring(0,node.startIndex);
+            //处理tag 转换
+            var tagStartStr = sourceText.substring(0,node.tagStarIndex);
+            var tagEndStr = sourceText.substring(node.tagEndIndex,node.endIndex);
+            startStr = tagStartStr + "div " + tagEndStr;
+            //console.log(node,sourceText.charAt(node.tagEndIndex),sourceText.charAt(node.endIndex));
+            if(!node.cssData&&node.tagClassName){
+                node.cssData = " ";
+            }
+            if(node.cssData&&node.tagClassName){
+                node.cssData += (" "+ node.tagClassName||"");
+            }
+            var endStr = sourceText.substring(node.endIndex);
+            //console.log(node.sourceTagName,node.tagClassName,node.cssData,this._transNode(node));
+            return {
+                before:startStr,
+                end:this._transNode(node)+endStr
+            };
+        }
+
     },
     transTpl:function(tplPath){
         var that = this;
@@ -80,6 +104,10 @@ templateParser.prototype = {
         var nodeArray = [];
         var parser = new htmlparser.Parser({
             onopentag: function(name, attribs){
+                var eleClassName;
+                if(name != "div"){
+                    eleClassName = htmlTagTrans.trans(name);
+                }
                 if(attribs['class']){
                     var tagStr = testStr.substring(parser.startIndex,parser.endIndex);
                     var testStrr = "class=\""+attribs['class']+"\"";
@@ -90,7 +118,15 @@ templateParser.prototype = {
                         process.exit(-1);
                     }
                     attribs['class'] = that._getCSSName(attribs['class']);
-                    nodeArray.push({cssData:attribs['class'],startIndex:parser.startIndex+classStartIndex,endIndex:parser.startIndex+classEndIndex});
+                    nodeArray.push({
+                        cssData:attribs['class'],
+                        startIndex:parser.startIndex+classStartIndex,
+                        endIndex:parser.startIndex+classEndIndex,
+                        sourceTagName:name,
+                        tagClassName:eleClassName,
+                        tagStarIndex:parser.startIndex+1,
+                        tagEndIndex:parser.startIndex+1+name.length
+                    });
                 }
             },
             ontext: function(text){
@@ -100,6 +136,29 @@ templateParser.prototype = {
                 /*if(tagname === "script"){
                  console.log("That's it?!");
                  }*/
+                //console.log(parser);
+                //调整关闭tag 的转换
+                //TODO 处理自闭合标签
+                var isAutoClose = testStr.charAt(parser.startIndex+1);
+                var startIndex = 1;
+                if(isAutoClose=="/"){
+                    startIndex = 2;
+                }
+                var eleClassName,classStartIndex= 0,classEndIndex = 0;
+                if(tagname != "div"){
+                    eleClassName = htmlTagTrans.trans(tagname);
+                    nodeArray.push({
+                        isCloseTag:isAutoClose=="/"?true:false,
+                        sourceTagName:tagname,
+                        startIndex:parser.startIndex+classStartIndex,
+                        endIndex:parser.endIndex-(2-startIndex),
+                        tagClassName:isAutoClose=="/"?null:eleClassName,
+                        tagStarIndex:parser.startIndex+startIndex,
+                        tagEndIndex:parser.startIndex+startIndex+tagname.length
+                    });
+                }
+
+
             }
         });
         parser.write(testStr);
@@ -118,10 +177,12 @@ templateParser.prototype = {
             for(var l= nodeArray.length;l--;){
                 var node = nodeArray[l];
                 var rs = this._replaceHtmlEL(sourceStr,node);
-                rsStr = rs.end+rsStr;
-                sourceStr = rs.before;
-                if(!l){
-                    rsStr = rs.before+rsStr;
+                if(rs){
+                    rsStr = rs.end+rsStr;
+                    sourceStr = rs.before;
+                    if(!l){
+                        rsStr = rs.before+rsStr;
+                    }
                 }
             }
             util.writeFile(this._options.output+".soy",rsStr);

@@ -178,8 +178,9 @@ var fs = require('fs');
 
 function execSync(command) {
 // Run the command in a subshell
-    child_process.exec(command + ' 2>&1 1>output && echo done! > done');
-
+    //child_process.exec(command + ' 2>&1 1>output && echo done! > done');
+    child_process.execSync(command);
+    return;
 // Block the event loop until the command has executed.
     while (!fs.existsSync('done')) {
 // Do nothing

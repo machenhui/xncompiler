@@ -19,8 +19,8 @@ var transHTMLTagName = require("./TransHtmlTag");
  */
 
 
-
-var htmlTagBackList = {"input":1}
+//可以屏蔽一些htmlTag的过滤
+var htmlTagBackList = {};
 
 
 //console.log(astToString(cssAST));
@@ -39,7 +39,7 @@ cssRename.prototype = {
             output:"",
             cssNamePrefix:"",
             cssHTMLTagPrefix:"xnCSS",
-            cssHTMLTagBackList:[]
+            cssHTMLTagBackList:["input","select"]
         },options);
         transHTMLTagName.setPrefix(this._options.cssHTMLTagPrefix);
         this._options.cssHTMLTagBackList.forEach(function(item,index,array){

@@ -79,7 +79,7 @@ templateParser.prototype = {
             var startStr = sourceText.substring(0,node.startIndex);
             //处理tag 转换
             var tagStartStr = sourceText.substring(0,node.tagStarIndex);
-            var tagEndStr = sourceText.substring(node.tagEndIndex,node.endIndex);
+            var tagEndStr = sourceText.substring(node.tagEndIndex,node.startIndex);
             startStr = tagStartStr + "div " + tagEndStr;
             //console.log(node,sourceText.charAt(node.tagEndIndex),sourceText.charAt(node.endIndex));
             if(!node.cssData&&node.tagClassName){
@@ -150,7 +150,8 @@ templateParser.prototype = {
                     nodeArray.push({
                         isCloseTag:isAutoClose=="/"?true:false,
                         sourceTagName:tagname,
-                        startIndex:parser.startIndex+classStartIndex,
+                        //startIndex:parser.startIndex+classStartIndex,
+                        startIndex:parser.endIndex-(2-startIndex),
                         endIndex:parser.endIndex-(2-startIndex),
                         tagClassName:isAutoClose=="/"?null:eleClassName,
                         tagStarIndex:parser.startIndex+startIndex,

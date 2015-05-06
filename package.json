@@ -21,7 +21,8 @@
     }
   ],
   "engines": {
-    "iojs":"~1.0.3"
+    "iojs":"~1.0.3",
+    "nodejs":"0.12.2"
   },
   "scripts": {
     "test": "grunt test"

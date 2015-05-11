@@ -38,6 +38,7 @@ module.exports.transDefine = function(namespace,moduleName,content,filePath){
         console.log(e);
     }
     var depsNames = [];
+    //console.log("============",info.callBackFn,"------------",content);
     transDeps(info.deps,moduleName,filePath);
     var l = info.deps.length;
     if(moduleStateMap&&moduleStateMap[filePath]){

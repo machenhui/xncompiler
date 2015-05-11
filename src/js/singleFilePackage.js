@@ -98,7 +98,11 @@ singleFilePackage.prototype = {
                     successCallBack(contents);
                 }
                 //console.log(contents);
+                fs.unlinkSync(startFile);
+                fs.unlinkSync(endFile)
             }, function(err) {
+                fs.unlinkSync(startFile);
+                fs.unlinkSync(endFile)
                 //optimization err callback
                 if(errorCallBack){
                     errorCallBack(err);

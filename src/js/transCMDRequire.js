@@ -134,6 +134,11 @@ module.exports.transCallBack = function(namespace,content,moduleName,filePath,op
                     callBackFn = deps;
                     deps = [];
                 }
+                if(arguments.length==3){
+                    deps = arguments[1];
+                    callBackFn = arguments[2];
+                }
+                //console.log(44444444,arguments.length,callBackFn,arguments);
                 if(!deps){
                     console.log(arguments);
                 }

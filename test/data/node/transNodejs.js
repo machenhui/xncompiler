@@ -10,8 +10,10 @@ var rootPath = path.resolve(path.dirname(module.filename),"../../../");
 transNodeJS({
     baseDir:rootPath,
     sourceFile:path.relative(rootPath,module.filename),
+    writeFile:true,
+    tmpDir:"./build/xnBuildTmp2/",
     successFn:function(data){
-        console.log(data.reverse().join(";"));
+        //console.log(data.reverse().join(";"));
     }
 })
 

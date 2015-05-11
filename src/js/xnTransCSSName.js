@@ -38,10 +38,45 @@ function transHtmlTag(htmlTag){
 }
 //TODO 将selectParser 进行打包生成新文件
 var xnCSSParser = parser.toString().replace(/^function\s*/i,"function xnCSSParser");
-var util = require("../util");
-var UglifyJS = require("uglify-js");
 var fs = require("fs");
 var Node_Path = require("path");
+var pkgJSFile = require("./singleFilePackage");
+function cpFile(from,to){
+    var content = fs.readFileSync(from);
+    fs.writeFileSync(to,content);
+}
+function transParser(){
+    //检测指定文件是否存在
+    var parserFileName = Node_Path.dirname(module.filename)+"/jsLib/xnCSSParser.js".replace(/\//gi,Node_Path.sep);
+    //console.log(parserFileName,fs.existsSync(parserFileName));
+    if(!fs.existsSync(parserFileName)){
+        var transNodeJS = require("./transNodeJS");
+        var baseDir = Node_Path.resolve(Node_Path.dirname(module.filename),"../");
+        transNodeJS({
+            baseDir:baseDir,
+            sourceFile:"css/selectorParser.js",
+            writeFile:true,
+            tmpDir:"./build/xnBuildTmp2/",
+            successFn:function(data){
+                //console.log(data.reverse().join(";"));
+                cpFile(Node_Path.dirname(module.filename)+"/jsLib/xnCSSParserSource.js","./build/xnBuildTmp2/xnCSSParser.js");
+                //编译文件
+                new pkgJSFile.singleFilePackage({
+                    baseUrl:"./build/xnBuildTmp2/",
+                    source:"xnCSSParser.js",
+                    output:Node_Path.dirname(module.filename)+"/jsLib/"
+                });
+            }
+        })
+    }else{
+        console.log("==xnCSSParser 已经生成==");
+        xnCSSParser = fs.readFileSync(parserFileName);
+    }
+}
+transParser();
+var util = require("../util");
+var UglifyJS = require("uglify-js");
+
 function transCSSName(){
     this._init.apply(this,arguments);
 }

@@ -6,10 +6,12 @@
 var path = require("path");
 function transDeps(deps,moduleName,filePath){
     var rootPath = filePath.replace(/\.js$/gi,"").replace(/\\+/gi,"/").replace(moduleName,"");
+    if(!deps){
+        console.log(arguments,new Error("222").stack);
+    }
     deps.forEach(function(item,index,array){
         if(item.search(/^\.+/gi)!=-1) {
-            deps[index] = path.relative(rootPath,path.resolve(path.dirname(moduleName),item)).replace(/\\+/gi,"/");
-            //console.log(item,moduleName,deps[index],rootPath);
+            deps[index] = path.relative(rootPath,path.resolve(rootPath+path.sep+path.dirname(moduleName),item)).replace(/\\+/gi,"/");
         }
     })
     return deps;

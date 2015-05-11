@@ -19,6 +19,7 @@ function transNodeJS(options){
     var _options = util.extend({
         baseDir:null,
         sourceFile:"",
+        tmpDir:"./build/xnBuildTmp/",
         successFn:function(data){}
     },options);
     var filePath;
@@ -27,8 +28,6 @@ function transNodeJS(options){
     }else{
         filePath = _options.sourceFile;
     }
-
-    //console.log("-------------------",filePath);
     var content = fs.readFileSync(filePath);
     //var moduleName = path.basename(_options.sourceFile,".js");
     //var moduleName = path.resolve(_options.baseDir,_options.sourceFile);
@@ -67,18 +66,25 @@ function transNodeJS(options){
                     transNodeJS({
                         baseDir:_options.baseDir,
                         sourceFile:sourceFilePath,
+                        tmpDir:_options.tmpDir,
+                        writeFile:_options.writeFile,
                         successFn:function(data){
                             rsArray = rsArray.concat(data);
                             //console.log(rsArray.length,index,path.resolve(path.dirname(filePath),item));
                         }
                     })
                 }else{
-                    //console.log(sourceFilePath,_tmpFilePath);
+                    console.log("找不到模块,可能使用了nodejs 插件",_tmpFilePath);
                 }
 
 
             //}
         });
+    }
+    if(_options.writeFile){
+        var fileName = rs.moduleName.search(/\.js$/gi)==-1?rs.moduleName+".js":rs.moduleName;
+        util.writeFile(_options.tmpDir+"/"+fileName,rs.rsString);
+        //console.log(_options.tmpDir+"/"+fileName,"文件输出完毕");
     }
     if(_options.successFn){
         _options.successFn(rsArray);
@@ -87,5 +93,6 @@ function transNodeJS(options){
         console.log(rsArray);
     }
 }
+
 
 module.exports = transNodeJS;

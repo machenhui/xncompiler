@@ -31,6 +31,12 @@ var DEF_TYPES = {
     "SELECTOR":2
 };
 var parser = require("../css/selectorParser");
+var cssTransHtmlTag = require("../css/TransHtmlTag");
+cssTransHtmlTag.setPrefix("xnCSSName");
+function transHtmlTag(htmlTag){
+    return cssTransHtmlTag(htmlTag);
+}
+//TODO 将selectParser 进行打包生成新文件
 var xnCSSParser = parser.toString().replace(/^function\s*/i,"function xnCSSParser");
 var util = require("../util");
 var UglifyJS = require("uglify-js");
@@ -124,8 +130,8 @@ transCSSName.prototype = {
                     break;
                 case DEF_TYPES.SELECTOR:
                     if(this._options.cssRenameMap){
-                        //console.log(valueNode.value);
-                        var rs = parser(valueNode.value);
+
+                        var rs = parser(valueNode.value).tokenArray;
                         if(rs&&rs.length>0){
                             var rsT = [];
                             for(var i= 0,l=rs.length;i<l;i++){
@@ -133,6 +139,9 @@ transCSSName.prototype = {
                                 if(item&&item.type == "className"){
                                     var text =this._options.cssRenameMap[item.text];
                                     rsT.push("."+(text?text:item.text));
+                                }else if(item&&item.type == "htmlTag"){
+                                    rsT.push(transHtmlTag(item.text));
+                                    //console.log(4444444444444,item.text,transHtmlTag(item.text),valueNode.value);
                                 }else{
                                     rsT.push(item.text);
                                 }

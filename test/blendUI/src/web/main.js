@@ -41,5 +41,5 @@ require(['src/web/blend','src/web/dialog/alert','src/web/Slider','src/web/Layer.
             document.dispatchEvent(e);
         }, false);
     }
-    
+
 },null,true);

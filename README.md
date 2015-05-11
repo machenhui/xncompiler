@@ -66,4 +66,17 @@ grunt.initConfig({
  2.功能模块组件的拆分
  3.支持对于部分文件才用google 的高级压缩
 
+#### 0.1 版本支持内容
+    1.模板语言 dust closure-template
+        模板提供 {css xxx} 插件进行显示调用
+        编译器支持默认的css 命名混淆
+        编译器提供tag翻译功能
+    2.css 支持sass less
+        支持命名混淆
+        支持tag 翻译
+        支持输出rename map
+    3.js 提供lib 库的显示调用
+        提供querySelector 的替代查找，提供rename 转换能力
+        提供默认转意功能
+
 

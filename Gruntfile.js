@@ -112,6 +112,8 @@ module.exports = function(grunt) {
 
     grunt.registerTask("test1",['xnCSSRename:test']);
 
-    grunt.registerTask("test2",['xnTemplateParser:test'])
+    grunt.registerTask("test2",['xnTemplateParser:test']);
+
+    grunt.registerTask("test3",["xncompiler:test"]);
 
 };

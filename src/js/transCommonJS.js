@@ -45,136 +45,25 @@ exports.getModulePath = function(namespace,moduleName,filePath){
 var transRequire = require("./transAMDContent").transRequire;
 var transDefine = require("./transAMDContent").transDefine;
 var transCallBackReq = require("./transCMDRequire").transCallBack;
+var transCMDRequire = require("./transCMDRequire");
+var transAMDContent = require("./transAMDContent");
+transCMDRequire.setGetModulePath(exports.getModulePath);
+transAMDContent.setGetModulePath(exports.getModulePath);
 var trimDefine = require("./compiler").trimDefine;
 
 
-/*function xnParser(){
-	this._init.apply(this,arguments);
-}
 
-xnParser.prototype = {
-		*//**
-		 * 初始化方法
-		 * @param js {String} 指定入口js 文件
-         * @param root {String} 指定requirejs 根路径
-		 * @param options 其他的一些配置文件
-		 *//*
-		_init:function(js,root,options){
-			this.rootPath = root;
-            this.mainJS = js;
-            this._options = extend({
-                    namespacePrefix:"xnCompiler"+parseInt(100+parseInt(Math.random()*10000000)),
-					rjsOptions:{},
-					uglifyOptions:{},
-                    _fileStatsMap:{}
-				},options);
-            this.concatDepsFile(this.mainJS,this.rootPath,this._options.rjsOptions,function(content){
-                //进行uglify2 压缩
-            })
-		},
-        _resolveDeps:function(moduleName,deps){
-            var rs = [];
-            for(var i = 0,l= deps.length;i<l;i++){
-                var item = deps[i];
-                if(item&&item.length>0){
-                    var path = Node_PATH.resolve(Node_PATH.dirname(this.rootPath+Node_PATH.sep+moduleName),item);
-                    path = Node_PATH.relative(this.rootPath,path);
-                    rs.push(path.replace(/\\{1,}/gi,"/"));
-                }
-            }
-            return rs;
-        },
-		*//**
-		 *  使用r.js 读取依赖分析，返回依赖的js 文件
-		 * @param jsFile
-		 * @param rootPath
-		 * @returns depsArray {Array}
-		 *//*
-        concatDepsFile:function(jsFile,rootPath,rjsOptions,successCallBack,errorCallBack){
-            var that = this;
-            var rootPath = STATIC_ROOT_PATH = rootPath?rootPath:"static/";
-            var startFile="build/tmpStart.js";
-            var endFile = "build/tmpEnd.js";
-            fs.writeFile(startFile,"(function(){if(typeof "+that._options.namespacePrefix+" == 'undefined'){var "+that._options.namespacePrefix+"={},"+that._options.namespacePrefix+"_cache={},"+that._options.namespacePrefix+"_g=(typeof window=='undefined'?global:window);}",null,function(){
-                var config = extend({
-                    baseUrl:rootPath,
-                    logLevel:4,
-                    mainConfigFile: rootPath+"/require.config.js",
-                    out:"build/"+jsFile,
-                    //判断入口js 文件，是require 就用require,是define 就用define 进行合并
-                    name:jsFile.replace(/\.js$/,""),
-                    //include:[jsFile],//devConf.modulePath+"/js/index.js",
-                    wrap:{
-                        startFile:startFile,
-                        endFile:endFile
-                    },
-                    optimize  : 'none',
-                    onBuildRead : function(moduleName, path, contents){
-                        if(that._options.fileStatsMap[path]){
-                            return that._options.fileStatsMap[path].rsString;
-                        }
-                        var isRequire = contents.search(/require\s*\(\s*\[(.|\r\n)*\],\s*function\s*\(/gi)!=-1;
-                        var rs = transCallBackReq(that._options.namespacePrefix,contents,isRequire?null:moduleName,path,{
-                            returnDeps:true
-                        });
-                        rs.deps = that._resolveDeps(moduleName,rs.deps);
-                        that._options.fileStatsMap[path]={modulename:moduleName,deps:rs.deps,rsString:rs.rsString};
-                        return rs.rsString;
-                    },
-                    onBuildWrite: function (moduleName, path, contents) {
-                        //console.log(moduleName.replace("//","/"),this.include[0].replace("//","/"));
-                        var isRequire = contents.search(/require\s*\(\s*\[(.|\r\n)*\],\s*function\s*\(/gi)!=-1;
-                        //if(this.include[1] && moduleName.replace("//","/") == this.include[1].replace("//","/")){
-                        var data;
-                        if(isRequire){
-                            data = transRequire(that._options.namespacePrefix,contents,path);
-                        }else{
-                            data = transDefine(that._options.namespacePrefix,moduleName,contents,path);
-                        }
-                        //util.writeFile(that.output+Node_PATH.sep+path,data);
-
-                        return data;
-                    }
-                },rjsOptions);
-
-                requirejs.optimize(config, function (buildResponse) {
-                    //buildResponse is just a text output of the modules
-                    //included. Load the built file for the contents.
-                    //Use config.out to get the optimized file contents.
-                    var contents = fs.readFileSync(config.out, 'utf8');
-                    contents = trimDefine(config.out,contents);
-                    fs.writeFileSync(config.out,contents.replace(/\;{1,}$/gi,";").replace(/(\r|\n|\r\n)\;(\r|\n|\r\n)*$/gi,""));
-                    //console.log(contents);
-                    if(successCallBack){
-                        successCallBack(contents);
-                    }
-                    if(that._options.compileReady){
-                        that._options.compileReady();
-                    }
-                    //console.log(contents);
-                }, function(err) {
-                    //optimization err callback
-                    if(errorCallBack){
-                        errorCallBack(err);
-                    }else{
-                        console.error(err);
-                    }
-                });
-            });
-
-		}
-};*/
-
-function transCommonJSRead(contents,namespacePrefix,moduleName,path){
+function transCommonJSRead(contents,namespacePrefix,moduleName,path,options){
     var isRequire = contents.search(/require\s*\(\s*\[(.|\r\n)*\],\s*function\s*\(/gi)!=-1;
-    var content = transCallBackReq(namespacePrefix,contents,isRequire?null:moduleName,path);
+    var content = transCallBackReq(namespacePrefix,contents,isRequire?null:moduleName,path,options);
     return content;
 }
+
 
 function transCommonJSWrite(contents,namespacePrefix,moduleName,path){
     var isRequire = contents.search(/require\s*\(\s*\[(.|\r\n)*\],\s*function\s*\(/gi)!=-1;
     if(isRequire){
-        return transRequire(namespacePrefix,contents,path);
+        return transRequire(namespacePrefix,moduleName,contents,path);
     }else{
         return transDefine(namespacePrefix,moduleName,contents,path);
     }

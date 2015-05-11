@@ -13,6 +13,7 @@ function xnGetCSSName(sourceText){
     var rsT = [];
     for(var i= 0,l=rs.length;i<l;i++){
         var item = rs[i];
+        //TODO 处理HTMLTag
         if(item.type == "className"){
             var text = xnCSSRenameMap[item.text];
             rsT.push(text?text:item.text);

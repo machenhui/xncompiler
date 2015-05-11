@@ -46,3 +46,10 @@
     2.打包合并js 文件
     3.css 命名混淆
             a.classList.add("bbbbb") ---> a.classList.add({encode "bbbbb"})
+
+
+
+##如何去开发的简版原则
+    1.css tag翻译命名混淆
+    2.模板中使用css
+    3.js selector 中使用 混淆之后的名称

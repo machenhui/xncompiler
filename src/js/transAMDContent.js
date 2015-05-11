@@ -1,57 +1,13 @@
 /**
  * 转化AMD 写法中的 require define 为局部变量
  */
-var getModulePath = require("./transCommonJS").getModulePath;
+//var getModulePath = require("./transCommonJS").getModulePath;
+var getModulePath;
+module.exports.setGetModulePath = function(_getModulePath){
+    getModulePath = _getModulePath;
+}
 var moduleStateMap = require("./transCMDRequire").moduleStateMap;
-/**
- * 将define 指令转换成全局命名空间下的一个函数
- * define(moduleName,deps,fun) ===> window[namespace][moduleName] = (function(deps...){})();
- */
-
-/*function varSafePrefix(namespace,array,_rs){
-    var rs = _rs;
-    if(!rs){
-        rs = "";
-    }
-    if(array.length>0){
-        var name = array.shift();
-        if(name&& name.replace(/\s/gi,"") !=""){
-            rs += "if(typeof "+namespace+" == 'undefined'){"+namespace+"={};} if(!"+namespace+"['"+name+"']){"+namespace+"['"+name+"']={}}"
-            rs = varSafePrefix(namespace+"['"+name+"']",array,rs);
-        }
-    }
-    return rs;
-}
-
-var moduleNameCache = {};
-function getModulePath(namespace,moduleName){
-    if(moduleNameCache[moduleName]){
-        return moduleNameCache[moduleName];
-    }
-    var moduleNameArray = moduleName.replace("//","/").split("/");
-    //var varName = "window";
-    var varName = "";
-    if(namespace){
-        //varName+="['"+namespace+"']";
-        varName+=namespace;
-    }
-    for(var i= 0,l=moduleNameArray.length;i<l;i++){
-        var name=moduleNameArray[i];
-        if(name&&name.replace(/\s/gi,'')==""){
-            moduleNameArray.splice(2,0);
-        }
-    }
-    var modulePath = "['"+moduleNameArray.join("']['")+"']";
-    var prefix = varSafePrefix(varName,moduleNameArray);
-    varName+=modulePath;
-    moduleNameCache[moduleName] = {
-        name:varName,
-        prefix:prefix
-    };
-    return moduleNameCache[moduleName];
-}
-module.exports.getModulePath = getModulePath;*/
-
+var transDeps = require("./transDeps");
 function defineTemplate(namespace,moduleName,runContent){
     var tpl = "{namespace}.__defineGetter__(\"{moduleName}\",function(){" +
        // "if(!{namespace}_cache){{namespace}_cache={}}" +
@@ -82,6 +38,7 @@ module.exports.transDefine = function(namespace,moduleName,content,filePath){
         console.log(e);
     }
     var depsNames = [];
+    transDeps(info.deps,moduleName,filePath);
     var l = info.deps.length;
     if(moduleStateMap&&moduleStateMap[filePath]){
         l = moduleStateMap[filePath];
@@ -103,7 +60,7 @@ module.exports.transDefine = function(namespace,moduleName,content,filePath){
  * require(deps,fun) ===>fun(transDepName....); transDepName 为全局命名空间下的变量
  */
 
-module.exports.transRequire = function(namespace,content,filePath){
+module.exports.transRequire = function(namespace,moduleName,content,filePath){
     var getInfo = new Function("require",content);
 
     try{
@@ -122,6 +79,7 @@ module.exports.transRequire = function(namespace,content,filePath){
         console.log(e);
     }
     var depsNames = [];
+    transDeps(info.deps,moduleName,filePath);
     var l = info.deps.length;
     if(moduleStateMap&&moduleStateMap[filePath]){
         l = moduleStateMap[filePath];

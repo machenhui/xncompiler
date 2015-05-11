@@ -7,8 +7,12 @@
  * TODO 使用uglify2 重写该逻辑
  */
 var UglifyJS = require("uglify-js");
-var getModulePath = require("./transCommonJS").getModulePath;
-
+//var getModulePath = require("./transCommonJS").getModulePath;
+var transDeps = require("./transDeps");
+var getModulePath;
+module.exports.setGetModulePath = function(_getModulePath){
+    getModulePath = _getModulePath;
+}
 
 
 function isInScopeChainVariables(scope, name) {
@@ -95,13 +99,13 @@ function getRequireDeps(fileName,content,namespace){
         additionDepends:result
     }
 }
+
 /**
  * 记录状态，去除 因 callBack里面的require 造成的参数多余
  */
 var moduleStateMap = {};
 module.exports.moduleStateMap = moduleStateMap;
 module.exports.transCallBack = function(namespace,content,moduleName,filePath,options){
-
 
     var rs_deps = getRequireDeps(filePath,content,namespace);
     var requires = [];
@@ -133,12 +137,14 @@ module.exports.transCallBack = function(namespace,content,moduleName,filePath,op
                 if(!deps){
                     console.log(arguments);
                 }
+                //console.log(callBackFn.toString());
                 info = {
                     moduleName:moduleName,
                     deps: deps,
                     callBackFn: callBackFn.toString()
                 };
             }
+
             getInfo(define);
 
         }else{
@@ -165,6 +171,7 @@ module.exports.transCallBack = function(namespace,content,moduleName,filePath,op
             info.deps.push(requires[l]);
         }
     }
+    transDeps(info.deps,moduleName,filePath);
     var rsString;
     try{
         //加入隐含的deps r.js 就会分析这些隐含依赖

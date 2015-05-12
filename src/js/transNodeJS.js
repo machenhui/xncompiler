@@ -12,7 +12,7 @@ var fs = require("fs");
 var path = require("path");
 
 function wrapper(content){
-    return "define(function(require,module,exports){"+content+"})";
+    return "define(function(require,exports,module){"+content+"})";
 }
 var globalMap = {};
 function transNodeJS(options){

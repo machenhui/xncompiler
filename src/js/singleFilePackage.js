@@ -92,7 +92,8 @@ singleFilePackage.prototype = {
                 //Use config.out to get the optimized file contents.
                 var contents = fs.readFileSync(config.out, 'utf8');
                 contents = trimDefine(config.out,contents);
-                fs.writeFileSync(config.out,contents.replace(/\;{1,}$/gi,";").replace(/(\r|\n|\r\n)\;(\r|\n|\r\n)*$/gi,""));
+                //fs.writeFileSync(config.out,contents.replace(/\;{1,}$/gi,";").replace(/(\r|\n|\r\n)\;(\r|\n|\r\n)*$/gi,""));
+                fs.writeFileSync(config.out,contents);
                 //console.log(contents);
                 if(successCallBack){
                     successCallBack(contents);

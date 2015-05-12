@@ -51,6 +51,7 @@ module.exports.transDefine = function(namespace,moduleName,content,filePath){
     }
     var runFun = "("+info.callBackFn+").call("+namespace+"_g"+(depsNames.length?",":"")+depsNames.join()+");";
     //return "var "+moduleBrowserName+"="+runFun;
+    //console.log(moduleBrowserName,moduleName);
     return defineTemplate(namespace,moduleBrowserName,runFun);
 };
 

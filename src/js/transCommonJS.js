@@ -34,12 +34,13 @@ function getModuleName(moduleName,filePath){
 var moduleNameShotName = {};
 var index=0;
 exports.getModulePath = function(namespace,moduleName,filePath){
+    moduleName = moduleName.replace(/\.js$/gi,"");
     var key = moduleNameSpateStr+getModuleName(moduleName,filePath);
     if(!moduleNameShotName[key]){
         moduleNameShotName[key] = "a"+(index++);
     }
     return moduleNameShotName[key];
-    //return key;
+    //return moduleName;
 };
 
 var transRequire = require("./transAMDContent").transRequire;

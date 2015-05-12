@@ -33,7 +33,7 @@ function make_node(ctor, orig, props) {
     }
     return new ctor(props);
 };
-function getRequireDeps(fileName,content,namespace){
+function getRequireDeps(fileName,content,namespace,moduleName){
     //console.log(fileName,content.length);
     var toplevel_ast = null;
     toplevel_ast = UglifyJS.parse(content, {
@@ -48,7 +48,10 @@ function getRequireDeps(fileName,content,namespace){
             result.push(node.args[0].value);
             var node_new = make_node(UglifyJS.AST_Symbol,toplevel_ast);
             //node_new.value = node.args[0].value;
-            node_new.name = namespace+"[\""+getModulePath(namespace,node.args[0].value,fileName)+"\"]";
+            var requireModuleName = transDeps([node.args[0].value],moduleName,fileName);
+            //node_new.name = namespace+"[\""+getModulePath(namespace,node.args[0].value,fileName)+"\"]";
+            node_new.name = namespace+"[\""+getModulePath(namespace,requireModuleName[0],fileName)+"\"]";
+            //console.log(node_new.name,requireModuleName);
             descend(node,this);
             return node_new;
         }
@@ -107,7 +110,7 @@ var moduleStateMap = {};
 module.exports.moduleStateMap = moduleStateMap;
 module.exports.transCallBack = function(namespace,content,moduleName,filePath,options){
 
-    var rs_deps = getRequireDeps(filePath,content,namespace);
+    var rs_deps = getRequireDeps(filePath,content,namespace,moduleName);
     var requires = [];
     if(rs_deps.additionDepends&&rs_deps.additionDepends.length>0){
         var compressor = UglifyJS.Compressor({
@@ -177,6 +180,7 @@ module.exports.transCallBack = function(namespace,content,moduleName,filePath,op
         }
     }
     transDeps(info.deps,moduleName,filePath);
+
     var rsString;
     try{
         //加入隐含的deps r.js 就会分析这些隐含依赖

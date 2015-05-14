@@ -42,8 +42,8 @@ module.exports = function(grunt) {
         source:"./test/runtime-API/runtime-API/src/device/",
         output:"./build/",
         conditionFile:"./test/data/condition.js",
-        globalDefineFile:"./test/data/defineVar.js"
-        //optimize:"none"
+        globalDefineFile:"./test/data/defineVar.js",
+        optimize:"none"
       }
     },
     xnTransCommonJS:{
@@ -110,10 +110,10 @@ module.exports = function(grunt) {
   // By default, lint and run all tests.
   grunt.registerTask('default', ['jshint', 'test']);
 
-    grunt.registerTask("test1",['xnCSSRename:test']);
+  grunt.registerTask("test1",['xnCSSRename:test']);
 
-    grunt.registerTask("test2",['xnTemplateParser:test']);
+  grunt.registerTask("test2",['xnTemplateParser:test']);
 
-    grunt.registerTask("test3",["xncompiler:test"]);
+  grunt.registerTask("test3",["xncompiler:test"]);
 
 };

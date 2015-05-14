@@ -134,6 +134,8 @@ conditionTrans.prototype = {
                 if (ast_dot.expression) {
                     _path.push(ast_dot.property);
                     return findClouda(ast_dot.expression, _path);
+                }else{
+                    console.log(ast_dot);
                 }
             } else {
                 if ((ast_dot instanceof UglifyJS.AST_SymbolRef) && ast_dot.global() && ast_dot.undeclared()) {
@@ -142,6 +144,7 @@ conditionTrans.prototype = {
                         global_def = that._globalConditionAST.find_variable(ast_dot.name);
                     }
                     if (global_def) {
+                        //console.log([that._globalConditions,that._globalDefs],ast_dot.name,_path);
                         return getGlobalConditionValue([that._globalConditions,that._globalDefs],ast_dot.name,_path);
                         /*var value = that._globalDefs[ast_dot.name];
                         for (var l = _path.length; l--;) {

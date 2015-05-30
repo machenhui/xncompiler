@@ -5,7 +5,7 @@
  */
 
 var UglifyJS = require("uglify-js");
-function treeTransForm(fileName,content){
+function treeTransForm(fileName,content,_global_defs){
     var topLevelAST = null;
     topLevelAST = UglifyJS.parse(content,{
         fileName:fileName,
@@ -35,20 +35,25 @@ function treeTransForm(fileName,content){
     content = compressed_ast.print_to_string({ beautify: true });
     //console.log(content);
     //return content;
-    var compressor = UglifyJS.Compressor({
-        if_return:true,
-        warnings:false
-        //beautify:false
-    });
+    try{
+        var compressor = UglifyJS.Compressor({
+            if_return:true,
+            warnings:false,
+            //beautify:true,
+            global_defs:_global_defs||{}
+        });
+    }catch(e){
+        console.log(e);
+    }
     //命名混淆
-    compressed_ast.mangle_names(true);
+    //compressed_ast.mangle_names(true);
     var compressed_ast2 = compressed_ast.transform(compressor);
     content = compressed_ast2.print_to_string();
     return content;
 }
 
 module.exports = {
-    trimDefine:function(fileName,content){
-        return treeTransForm(fileName,content);
+    trimDefine:function(fileName,content,_global_defs){
+        return treeTransForm(fileName,content,_global_defs);
     }
 }

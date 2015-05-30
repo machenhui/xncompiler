@@ -17,6 +17,9 @@ var STATIC_ROOT_PATH;
 
 var trimDefine = require("./compiler").trimDefine;
 
+function wrapper(content){
+    return "define(function(require,exports,module){"+content+";return module.exports;})";
+}
 
 function singleFilePackage(){
     this._init.apply(this,arguments);
@@ -35,7 +38,9 @@ singleFilePackage.prototype = {
              *  false 不添加loader 文件
              *  true 添加loader
              */
-            isAddSimpleRequire:false
+            isAddSimpleRequire:false,
+            isWrapperData:false,
+            global_defs:{}
         },options);
         var fsStats = fs.statSync(this._options.output);
         if(fsStats.isDirectory()){
@@ -79,6 +84,18 @@ singleFilePackage.prototype = {
                 },
                 optimize  : 'none',
                 onBuildRead : function(moduleName, path, contents){
+                    if(that._options.isWrapperData){
+                        var _contents = contents.replace(/(?:^|\n|\r)\s*\/\*[\s\S]*?\*\/\s*(?:\r|\n|$)/g, '\n').replace(/(?:^|\n|\r)\s*\/\/.*(?:\r|\n|$)/g, '\n').replace(/(\r|\n)*/gi,"");
+                        var isRequire = _contents.search(/^require\s*\(\s*\[(.|\r\n)*\],\s*function\s*\(/gi)!=-1;
+                        //检测是否是标准式define
+                        var isDefine = _contents.search(/^define\s*\(\s*\w*\s*function\s*\(/gi)!=-1;
+                        if(!isRequire&&!isDefine){
+                            contents = wrapper(contents);
+                        }
+                        //console.log(isRequire,isDefine);
+                        //console.log(_contents);
+                    }
+
                     return transCommonJSContentRead(contents,that.namespacePrefix,moduleName,path);
                 },
                 onBuildWrite: function (moduleName, path, contents) {
@@ -91,7 +108,10 @@ singleFilePackage.prototype = {
                 //included. Load the built file for the contents.
                 //Use config.out to get the optimized file contents.
                 var contents = fs.readFileSync(config.out, 'utf8');
-                contents = trimDefine(config.out,contents);
+                //console.log(config.out);
+                //console.log(that._options.global_defs);
+                //console.log(contents);
+                contents = trimDefine(config.out,contents,that._options.global_defs);
                 //fs.writeFileSync(config.out,contents.replace(/\;{1,}$/gi,";").replace(/(\r|\n|\r\n)\;(\r|\n|\r\n)*$/gi,""));
                 fs.writeFileSync(config.out,contents);
                 //console.log(contents);

@@ -96,7 +96,14 @@ conditionTrans.prototype = {
     _getSourceFiles:function(inputDir,outputDir,callBackFn){
         var stat = fs.statSync(inputDir);
         var that = this;
+        //console.log(inputDir,inputDir.search(/\.(git|svn)/gi));
+        if(inputDir.search(/\.(git|svn)/gi)!=-1){
+            return;
+        }
         if(stat.isFile()){
+            if(inputDir.search(/\.js$/gi)==-1){
+                return;
+            }
             fs.readFile(inputDir,{encoding:"utf8"}, function (err, data) {
                 if (err){
                     throw err;
@@ -125,7 +132,6 @@ conditionTrans.prototype = {
             fileName: inputPath,
             toplevel: topLevelAST
         });
-
         function findClouda(ast_dot, _path) {
             if (!_path) {
                 _path = [];

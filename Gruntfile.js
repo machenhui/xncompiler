@@ -35,6 +35,16 @@ module.exports = function(grunt) {
         source:"src/web/main.js",
         mainConfigFile:"test/blendUI/require.config.js",
         output:"./build/"
+      },
+      testBoostui:{
+        baseUrl:"test/boostui/",
+        source:"js/boostMain.js",
+        mainConfigFile:"test/blendUI/require.config.js",
+        output:"./build/boostui/",
+        isWrapperData:true,
+        global_defs:{
+          NAMESPACE:"xn-namespace-"
+        }
       }
     },
     xnConditionCompile:{
@@ -43,6 +53,13 @@ module.exports = function(grunt) {
         output:"./build/",
         conditionFile:"./test/data/condition.js",
         globalDefineFile:"./test/data/defineVar.js",
+        optimize:"none"
+      },
+      testBoostui:{
+        source:"./test/boostui/js/",
+        output:"./build/",
+        conditionFile:"./test/data/boostui/condition.js",
+        globalDefineFile:"./test/data/boostui/defineVar.js",
         optimize:"none"
       }
     },

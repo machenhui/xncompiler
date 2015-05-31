@@ -132,19 +132,19 @@ conditionTrans.prototype = {
             fileName: inputPath,
             toplevel: topLevelAST
         });
-        function findClouda(ast_dot, _path) {
+        function findClouda(ast_dot, isCheckVarDefine,_path) {
             if (!_path) {
                 _path = [];
             }
             if (ast_dot instanceof UglifyJS.AST_Dot) {
                 if (ast_dot.expression) {
                     _path.push(ast_dot.property);
-                    return findClouda(ast_dot.expression, _path);
+                    return findClouda(ast_dot.expression,isCheckVarDefine, _path);
                 }else{
                     console.log(ast_dot);
                 }
             } else {
-                if ((ast_dot instanceof UglifyJS.AST_SymbolRef) && ast_dot.global() && ast_dot.undeclared()) {
+                if(isCheckVarDefine){
                     var global_def = that._globalDefAST.find_variable(ast_dot.name);
 
                     if(!global_def){
@@ -154,19 +154,23 @@ conditionTrans.prototype = {
                     if (global_def) {
                         //console.log([that._globalConditions,that._globalDefs],ast_dot.name,_path);
                         return getGlobalConditionValue([that._globalConditions,that._globalDefs],ast_dot.name,_path);
-                        /*var value = that._globalDefs[ast_dot.name];
-                        for (var l = _path.length; l--;) {
-                            if (value[_path[l]] == null) {
-                                //console.error("获取的参数不存在",ast_dot.name,value,_path[l],_path.reverse());
-                                return;
-                            } else {
-                                value = value[_path[l]];
-                            }
-                        }
-                        return value;*/
                     }
+                }else{
+                    if ((ast_dot instanceof UglifyJS.AST_SymbolRef) && ast_dot.global() && ast_dot.undeclared()) {
+                        var global_def = that._globalDefAST.find_variable(ast_dot.name);
 
+                        if(!global_def){
+                            global_def = that._globalConditionAST.find_variable(ast_dot.name);
+                        }
+
+                        if (global_def) {
+                            //console.log([that._globalConditions,that._globalDefs],ast_dot.name,_path);
+                            return getGlobalConditionValue([that._globalConditions,that._globalDefs],ast_dot.name,_path);
+                        }
+
+                    }
                 }
+
 
             }
         }
@@ -177,9 +181,23 @@ conditionTrans.prototype = {
             switch (node.TYPE) {
                 case "VarDef":
                     //console.log(node.name.name);
+                    var rs = findClouda(node.name,true);
+                    if(rs){
+                        console.error("不能在代码中定义开关变量",rs,typeof(rs),node.print_to_string(),inputPath,"start",node.start,"end",node.end);
+                        process.exit(-1);
+                    }
                     break;
                 case "SymbolVar":
                     //console.log(node.name);
+                    /*var rs = findClouda(node,true);
+                    if(rs){
+                        console.error("不能在代码中定义开关变量",rs,
+                            typeof(rs),
+                            deep_clone.parent().print_to_string(),
+                            inputPath,"start",
+                            node.start,"end",
+                            node.end);
+                    }*/
                     break;
                 case "ObjectKeyVal":
                     //console.log(node.key);
@@ -215,7 +233,7 @@ conditionTrans.prototype = {
                     var parent = deep_clone.parent();
                     var rs = findClouda(node);
                     if (rs != null && parent instanceof UglifyJS.AST_Assign) {
-                        console.error("代码中不能对常量进行定义", node);
+                        console.error("代码中不能对常量进行定义", node.print_to_string(),inputPath,"start",node.start,"end",node.end);
                         process.exit(-1);
                     } else if (rs != null) {
                         if(typeof(rs) == "number"){

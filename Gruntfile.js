@@ -56,7 +56,8 @@ module.exports = function(grunt) {
         optimize:"none"
       },
       testBoostui:{
-        source:"./test/boostui/widget/",
+        //source:"./test/boostui/widget/",
+        source:"./test/boostui/js/",
         output:"./build/",
         conditionFile:"./test/data/boostui/condition.js",
         globalDefineFile:"./test/data/boostui/defineVar.js",

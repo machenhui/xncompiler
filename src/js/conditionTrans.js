@@ -146,9 +146,11 @@ conditionTrans.prototype = {
             } else {
                 if ((ast_dot instanceof UglifyJS.AST_SymbolRef) && ast_dot.global() && ast_dot.undeclared()) {
                     var global_def = that._globalDefAST.find_variable(ast_dot.name);
+
                     if(!global_def){
                         global_def = that._globalConditionAST.find_variable(ast_dot.name);
                     }
+
                     if (global_def) {
                         //console.log([that._globalConditions,that._globalDefs],ast_dot.name,_path);
                         return getGlobalConditionValue([that._globalConditions,that._globalDefs],ast_dot.name,_path);
@@ -184,6 +186,27 @@ conditionTrans.prototype = {
                     break;
                 case "SymbolRef":
                     //console.log(node.name, node.TYPE);
+                    var rs = findClouda(node);
+                    if(rs && (typeof(rs) == "string"||typeof(rs) == "number")){
+                        if(typeof(rs) == "number"){
+                            return new UglifyJS.AST_Number({
+                                value: rs,
+                                start: node.start,
+                                end: node.end
+                            });
+                        }else if(typeof(rs) == "string"){
+                            return new UglifyJS.AST_String({
+                                value: rs,
+                                start: node.start,
+                                end: node.end
+                            });
+                        }
+                    }else{
+                        //TODO 检测是否有定义的变量 覆盖
+                        //if(node.name == "NAMESPACE"){
+                        //    console.log("未能替换",rs,inputPath);
+                        //}
+                    }
                     break;
                 case "Dot":
                     //console.log(node.property, node.TYPE);

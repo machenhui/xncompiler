@@ -200,6 +200,8 @@ conditionTrans.prototype = {
                                 start: node.start,
                                 end: node.end
                             });
+                        }else{
+                            console.error("不认识的返回结果类型",rs,typeof(rs),node.print_to_string(),inputPath,"start",node.start,"end",node.end);
                         }
                     }else{
                         //TODO 检测是否有定义的变量 覆盖
@@ -216,11 +218,21 @@ conditionTrans.prototype = {
                         console.error("代码中不能对常量进行定义", node);
                         process.exit(-1);
                     } else if (rs != null) {
-                        return new UglifyJS.AST_Number({
-                            value: rs,
-                            start: node.start,
-                            end: node.end
-                        });
+                        if(typeof(rs) == "number"){
+                            return new UglifyJS.AST_Number({
+                                value: rs,
+                                start: node.start,
+                                end: node.end
+                            });
+                        }else if(typeof(rs) == "string"){
+                            return new UglifyJS.AST_String({
+                                value: rs,
+                                start: node.start,
+                                end: node.end
+                            });
+                        }else{
+                            console.error("不认识的返回结果类型",rs,typeof(rs),node.print_to_string(),inputPath,"start",node.start,"end",node.end);
+                        }
                     }
                     break;
                 case "If":

@@ -250,6 +250,7 @@ conditionTrans.prototype = {
                             });
                         }else{
                             console.error("不认识的返回结果类型",rs,typeof(rs),node.print_to_string(),inputPath,"start",node.start,"end",node.end);
+                            process.exit(-1);
                         }
                     }
                     break;

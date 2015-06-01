@@ -42,7 +42,8 @@ function getRequireDeps(fileName,content,namespace,moduleName){
     });
     toplevel_ast.figure_out_scope();
     var result = [];
-
+    var isCMDMode = false;
+    var isNeedAddReturn = false;
     var deep_clone = new UglifyJS.TreeTransformer(function(node, descend){
         if(node instanceof UglifyJS.AST_Call && node.expression.name == "require"&&node.args.length==1){
             result.push(node.args[0].value);
@@ -54,6 +55,54 @@ function getRequireDeps(fileName,content,namespace,moduleName){
             //console.log(node_new.name,requireModuleName);
             descend(node,this);
             return node_new;
+        }
+        if(node instanceof UglifyJS.AST_Call && node.expression.name == "define"){
+            var lastArg = node.args[node.args.length - 1];
+            if(lastArg.TYPE == "Function"){
+                var mode = 0;
+                if(lastArg.argnames[0] && lastArg.argnames[0].name == "require"){
+                    mode += 1;
+                }
+                if(lastArg.argnames[1] && lastArg.argnames[1].name == "exports"){
+                    mode += 2;
+                }
+                if(lastArg.argnames[2] && lastArg.argnames[2].name == "module"){
+                    mode += 4;
+                }
+                if(mode == 1 || mode == 3 || mode == 7){
+                    isCMDMode = true;
+                    lastArg.argnames.forEach(function(item,index){
+                        //console.log(index,"========",item.name);
+                    });
+                    if(mode == 3 || mode == 7){
+                        isNeedAddReturn = true;
+                    }
+                    if(isNeedAddReturn){
+                        var len = lastArg.body.length;
+                        if(lastArg.body[len-1].TYPE != "Return"){
+                            //return module exports
+                            var _return = UglifyJS.parse(mode==3?"exports;":"module.exports;", {
+                                filename:fileName,
+                                toplevel:node.body
+                            });
+                            _return.figure_out_scope();
+                            var _retAST = new UglifyJS.AST_Return(
+                                {
+                                    value:_return,
+                                    start:lastArg.body[len-1].end,
+                                    end:lastArg.body[len-1].end
+                                }
+                            );
+                            lastArg.body[len] = _retAST;
+                            //console.log(_retAST.print_to_string(),mode);
+                        }
+                    }
+
+                }
+            }else{
+                console.log(lastArg.TYPE);
+            }
+
         }
         descend(node,this);
         return node;
@@ -88,17 +137,19 @@ function getRequireDeps(fileName,content,namespace,moduleName){
                         }
                         //return node_new;
                     }
-
                 }
-
+            }else if(name&&ex.name == "define"){
+                console.log(node.args);
             }
         }
     });
     //toplevel_ast.walk(walker);
     var topAst = toplevel_ast.transform(deep_clone);
+    //console.log(topAst.print_to_string());
     //返回顶级语法树和 附加的depends对象
     return {
         topAST:topAst,
+        isCMDMode:isCMDMode,
         additionDepends:result
     }
 }
@@ -109,7 +160,6 @@ function getRequireDeps(fileName,content,namespace,moduleName){
 var moduleStateMap = {};
 module.exports.moduleStateMap = moduleStateMap;
 module.exports.transCallBack = function(namespace,content,moduleName,filePath,options){
-
     var rs_deps = getRequireDeps(filePath,content,namespace,moduleName);
     var requires = [];
     if(rs_deps.additionDepends&&rs_deps.additionDepends.length>0){
@@ -152,7 +202,6 @@ module.exports.transCallBack = function(namespace,content,moduleName,filePath,op
                     callBackFn: callBackFn.toString()
                 };
             }
-
             getInfo(define);
 
         }else{
@@ -170,7 +219,7 @@ module.exports.transCallBack = function(namespace,content,moduleName,filePath,op
 
 
     }catch(e){
-        console.log(e);
+        console.error(e);
     }
     //console.log(requires);
     if(requires&&requires.length>0){
@@ -182,17 +231,11 @@ module.exports.transCallBack = function(namespace,content,moduleName,filePath,op
     transDeps(info.deps,moduleName,filePath);
 
     var rsString;
-    try{
-        //加入隐含的deps r.js 就会分析这些隐含依赖
-        if(moduleName){
-            rsString = "define('"+info.moduleName+"',[\""+info.deps.join("\",\"")+"\"],"+info.callBackFn+")";
-        }else{
-            rsString = "require([\""+info.deps.join("\",\"")+"\"],"+info.callBackFn+")";
-        }
-    }catch(e){
-
-        console.log(info);
-        throw e;
+    //加入隐含的deps r.js 就会分析这些隐含依赖
+    if(moduleName){
+        rsString = "define('"+info.moduleName+"',[\""+info.deps.join("\",\"")+"\"],"+info.callBackFn+")";
+    }else{
+        rsString = "require([\""+info.deps.join("\",\"")+"\"],"+info.callBackFn+")";
     }
     if(options&&options.returnDeps){
         return {

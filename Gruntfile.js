@@ -42,9 +42,17 @@ module.exports = function(grunt) {
         mainConfigFile:"test/blendUI/require.config.js",
         output:"./build/boostui/",
         isWrapperData:true,
+        isDebug:true,
         global_defs:{
           NAMESPACE:"xn-namespace-"
         }
+      },
+      testCMD:{
+        baseUrl:"test/testCMD/",
+        source:"main.js",
+        mainConfigFile:"test/blendUI/require.config.js",
+        output:"./build/testCMD/",
+        isWrapperData:true
       }
     },
     xnConditionCompile:{

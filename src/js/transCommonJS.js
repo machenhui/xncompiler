@@ -39,8 +39,11 @@ exports.getModulePath = function(namespace,moduleName,filePath){
     if(!moduleNameShotName[key]){
         moduleNameShotName[key] = "a"+(index++);
     }
-    //return moduleNameShotName[key];
-    return moduleName;
+    if(global.isXNDebug){
+        return moduleName;
+    }else{
+        return moduleNameShotName[key];
+    }
 };
 
 var transRequire = require("./transAMDContent").transRequire;

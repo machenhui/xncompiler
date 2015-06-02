@@ -95,11 +95,16 @@ singleFilePackage.prototype = {
                         //console.log(isRequire,isDefine);
                         //console.log(_contents);
                     }
-
-                    return transCommonJSContentRead(contents,that.namespacePrefix,moduleName,path);
+                    var inputText = transCommonJSContentRead(contents,that.namespacePrefix,moduleName,path);
+                    //console.log("=============inputText============");
+                    //console.log(inputText);
+                    return inputText;
                 },
                 onBuildWrite: function (moduleName, path, contents) {
-                    return transCommonJSContentWrite(contents,that.namespacePrefix,moduleName,path);
+                    var output = transCommonJSContentWrite(contents,that.namespacePrefix,moduleName,path);
+                    //console.log("============output=============");
+                    //console.log(output);
+                    return output;
                 }
             },rjsOptions);
 

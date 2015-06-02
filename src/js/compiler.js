@@ -48,7 +48,7 @@ function treeTransForm(fileName,content,_global_defs){
     //命名混淆
     //compressed_ast.mangle_names(true);
     var compressed_ast2 = compressed_ast.transform(compressor);
-    content = compressed_ast2.print_to_string();
+    content = compressed_ast2.print_to_string({beautify:true});
     return content;
 }
 

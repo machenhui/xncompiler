@@ -22,6 +22,9 @@ module.exports = function(grunt) {
         done();
       }
     }
+    if(this.data.isDebug){
+      global.isXNDebug = true;
+    }
     new singleFilePackage(this.data);
     // Iterate over all specified file groups.
 

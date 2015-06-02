@@ -81,6 +81,11 @@ function getRequireDeps(fileName,content,namespace,moduleName){
                         var len = lastArg.body.length;
                         if(lastArg.body[len-1].TYPE != "Return"){
                             //return module exports
+                            var _top  = UglifyJS.parse("var module={exports:{}},exports=module.exports;", {
+                                filename:fileName,
+                                toplevel:node.body
+                            });
+                            len = lastArg.body.unshift(_top);
                             var _return = UglifyJS.parse(mode==3?"exports;":"module.exports;", {
                                 filename:fileName,
                                 toplevel:node.body
@@ -167,8 +172,11 @@ module.exports.transCallBack = function(namespace,content,moduleName,filePath,op
             warnings:false
         });
         var compressed_ast = rs_deps.topAST.transform(compressor);
-        content = compressed_ast.print_to_string();
+        content = compressed_ast.print_to_string({beautify:true});
         requires = rs_deps.additionDepends;
+    }else{
+        //兼容处理cmd 问题
+        content =  rs_deps.topAST.print_to_string({beautify:true});
     }
     if(moduleName){
         var getInfo = new Function("define",content);

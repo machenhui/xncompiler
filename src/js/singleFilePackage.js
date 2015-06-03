@@ -18,7 +18,7 @@ var STATIC_ROOT_PATH;
 var trimDefine = require("./compiler").trimDefine;
 
 function wrapper(content){
-    return "define(function(require,exports,module){"+content+";return module.exports;})";
+    return "define(function(require,exports,module){var module={exports:{}},exports=module.exports;"+content+";return module.exports;})";
 }
 
 function singleFilePackage(){

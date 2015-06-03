@@ -168,11 +168,11 @@ module.exports.transCallBack = function(namespace,content,moduleName,filePath,op
     var rs_deps = getRequireDeps(filePath,content,namespace,moduleName);
     var requires = [];
     if(rs_deps.additionDepends&&rs_deps.additionDepends.length>0){
-        var compressor = UglifyJS.Compressor({
+        /*var compressor = UglifyJS.Compressor({
             warnings:false
         });
-        var compressed_ast = rs_deps.topAST.transform(compressor);
-        content = compressed_ast.print_to_string({beautify:true});
+        var compressed_ast = rs_deps.topAST.transform(compressor);*/
+        content = rs_deps.topAST.print_to_string({beautify:true});
         requires = rs_deps.additionDepends;
     }else{
         //兼容处理cmd 问题

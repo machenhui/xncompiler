@@ -26,7 +26,7 @@
   bottom: 0px;
   background-color: #f8f8f8;
   /*hack 框的某些版本bug*/ }
-  .baiduServiceBottomBar div, .baiduServiceBottomBar span, .baiduServiceBottomBar object, .baiduServiceBottomBar iframe, .baiduServiceBottomBar h1, .baiduServiceBottomBar h2, .baiduServiceBottomBar h3, .baiduServiceBottomBar h4, .baiduServiceBottomBar h5, .baiduServiceBottomBar h6, .baiduServiceBottomBar p,
+  .baiduServiceBottomBar  div, .baiduServiceBottomBar span, .baiduServiceBottomBar object, .baiduServiceBottomBar iframe, .baiduServiceBottomBar h1, .baiduServiceBottomBar h2, .baiduServiceBottomBar h3, .baiduServiceBottomBar h4, .baiduServiceBottomBar h5, .baiduServiceBottomBar h6, .baiduServiceBottomBar p,
   .baiduServiceBottomBar a, .baiduServiceBottomBar em, .baiduServiceBottomBar img, .baiduServiceBottomBar b, .baiduServiceBottomBar i, .baiduServiceBottomBar dl, .baiduServiceBottomBar dt, .baiduServiceBottomBar dd, .baiduServiceBottomBar ol, .baiduServiceBottomBar ul, .baiduServiceBottomBar li,
   .baiduServiceBottomBar fieldset, .baiduServiceBottomBar form, .baiduServiceBottomBar label, .baiduServiceBottomBar table, .baiduServiceBottomBar caption, .baiduServiceBottomBar tbody, .baiduServiceBottomBar tfoot, .baiduServiceBottomBar thead, .baiduServiceBottomBar tr, .baiduServiceBottomBar th, .baiduServiceBottomBar td {
     margin: 0;

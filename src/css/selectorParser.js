@@ -7,6 +7,9 @@ cssCharCode+=cssCharCode.toUpperCase();
 cssCharCode+="1234567890"
 var htmlTagCode = cssCharCode;
 cssCharCode+="-_";
+
+var pseudoNameArray = {"nth-of-type":1,"lang":1,"nth-child":1,"nth-last-child":1,"nth-last-of-type":1};
+
 function findHtmlTag(source,startIndex){
     var endIndex = startIndex;
     var isBreak = false;
@@ -29,7 +32,7 @@ function findHtmlTag(source,startIndex){
 //
 function findClassName(source,startIndex){
     var endIndex = startIndex;
-    var isBreak = false;
+    //var isBreak = false;
     for(var i = startIndex,l=source.length;i<l;i++){
         var char  = source[i];
         if(cssCharCode.indexOf(char)==-1){
@@ -39,9 +42,9 @@ function findClassName(source,startIndex){
             endIndex = i;
         }
     }
-    if(!isBreak){
+   /* if(!isBreak){
         endIndex += 1;
-    }
+    }*/
     return source.substring(startIndex,endIndex);
 }
 
@@ -111,7 +114,7 @@ var parser = function(source,_rootNode){
             rsArray.push({
                 type:"htmlTag",
                 text:htmlTag
-            })
+            });
             currentNode = new SelectorToken.CSS_NODE(SelectorToken.CSS_NODE_TYPE.TAG_NAME,htmlTag);
         }
 
@@ -129,9 +132,10 @@ var parser = function(source,_rootNode){
         //var e = new Error();
         //console.log(e.stack)
     }
-    //console.log("start=============================================start",source);
+    var pseudoStartIndex =  -1;
     for(var i= 0,l=source.length;i<l;i++){
         var char = source.charAt(i);
+        var charCode = source.charCodeAt(i);
         switch (char){
             case ".":
                 storeData();
@@ -173,7 +177,18 @@ var parser = function(source,_rootNode){
                 var startIndex = i,subStr = source.substring(i),endIndex = subStr.indexOf(")");
                 var subSelector = subStr.substring(1,endIndex);
                 inScope = true;
-                if(subSelector.length >0){
+                var _isExecute = true;
+                if(pseudoClass&&pseudoStartIndex!=-1){
+                	var pseudoClassName  = source.substring(pseudoStartIndex+1,i);
+                	//console.log(pseudoClassName);
+                	if(pseudoClassName in pseudoNameArray){
+                		//console.log(pseudoClassName);
+                		_isExecute = false;
+                		 otherStr += subStr.substring(0,endIndex+1);
+                	}
+                }
+                
+                if(_isExecute && subSelector.length >0){
                     storeData();
                     var _tmpArray = parser(subSelector);
                     rsArray.push({
@@ -197,6 +212,7 @@ var parser = function(source,_rootNode){
             case "~":
             case "+":
                 pseudoClass = false;
+                pseudoStartIndex = -1;
                 storeData({noOther:true});
                 className = null;
                 htmlTag = null;
@@ -208,6 +224,7 @@ var parser = function(source,_rootNode){
                 break;
             case ":":
                 pseudoClass = true;
+                pseudoStartIndex = i;
                 storeData({noOther:true});
                 className = null;
                 htmlTag = null;

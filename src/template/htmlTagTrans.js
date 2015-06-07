@@ -6,6 +6,18 @@
  *
  */
 
+var tagRenameMap = {};
+
 module.exports = {
-    trans:function(tagName){return "xnCSSName-"+tagName}
+    trans:function(tagName){
+    	if(tagRenameMap[tagName]){
+    		return tagRenameMap[tagName];
+    	}else{
+    		return tagName;
+    	}
+    	
+    },
+    setRenameMap:function(nameMap){
+    	tagRenameMap = nameMap;
+    }
 }

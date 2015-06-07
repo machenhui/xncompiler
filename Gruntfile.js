@@ -92,7 +92,7 @@ module.exports = function(grunt) {
         test1: {
             src: "test/data/css/index.css",
             mangleNameOutputFile: "build/index.css.map.json",
-            output: "./build/test/data/css/webkit.html.css",
+            output: "./build/test/data/css/index.css",
             cssNamePrefix: "wa-ticket-"
         }
     },
@@ -134,7 +134,7 @@ module.exports = function(grunt) {
   grunt.registerTask('test', ['clean', 'xncompiler', 'nodeunit']);
 
   // By default, lint and run all tests.
-  grunt.registerTask('default', ['jshint', 'test']);
+  //grunt.registerTask('default', ['jshint', 'test']);
 
   grunt.registerTask("test1",['xnCSSRename:test']);
 

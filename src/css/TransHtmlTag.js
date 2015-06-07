@@ -6,7 +6,7 @@
 //tag name 映射  tagCSSPrefix-{tagName}
 var tagCSSPrefix = "";
 function transHTMLTag(tagName){
-    return "."+tagCSSPrefix+"-"+tagName;
+    return tagCSSPrefix+"-"+tagName;
 }
 transHTMLTag.setPrefix = function(prefix){
     tagCSSPrefix = prefix;

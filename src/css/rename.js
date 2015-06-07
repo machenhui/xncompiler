@@ -96,14 +96,18 @@ cssRename.prototype = {
         }
     },
     _strNum:function(str){
-        if(!this.sourceMap[str]){
+    	if(!this.sourceMap["className"]){
+    		this.sourceMap["className"] = {};
+    	}
+    	var root = this.sourceMap["className"];
+        if(!root[str]){
             var name = str;
             if(this._options.mangleNameOutputFile){
                 name = util.base54_xn(this.cssNameIndex++);
             }
-            this.sourceMap[str] = this._options.cssNamePrefix+name;
+            root[str] = this._options.cssNamePrefix+name;
         }
-        return this.sourceMap[str];
+        return root[str];
     },
     _transSASTtoString:function(sAST){
         var rs = [];
@@ -116,7 +120,17 @@ cssRename.prototype = {
                 //if(item.text = "isindex"){
                     //console.log(item,htmlTagBackList[item.text]?item.text:transHTMLTagName(item.text));
                 //}
-                rs.push(htmlTagBackList[item.text]?item.text:transHTMLTagName(item.text));
+            	if(!this.sourceMap["htmlTag"]){
+            		this.sourceMap["htmlTag"] = {};
+            	}
+            	var root = this.sourceMap["htmlTag"];
+            	if(!htmlTagBackList[item.text]){
+            		if(!root[item.text]){
+            			root[item.text] = transHTMLTagName(item.text);
+            		}
+            	}
+                rs.push(htmlTagBackList[item.text]?item.text:"."+root[item.text]);
+            	 /*rs.push(htmlTagBackList[item.text]?item.text:transHTMLTagName(item.text));*/
             }else if(item.type == "other"){
                 rs.push(item.text);
             }else if(item.type == "subScope"){

@@ -26,6 +26,12 @@ templateParser.prototype = {
         if(this._options.cssRenameMap){
             this.cssNameMap = JSON.parse(fs.readFileSync(this._options.cssRenameMap).toString());
         }
+        if(this.cssNameMap["htmlTag"]){
+        	htmlTagTrans.setRenameMap(this.cssNameMap["htmlTag"]);
+        }
+        if(this.cssNameMap["className"]){
+        	this.classNameMap = this.cssNameMap["className"];
+        }
         var rs = this.transTpl(this._options.source);
         this.compileTpl(rs.source,rs.selectors);
         this.transTplJS(this._options.output,rs.tplDeps);
@@ -42,14 +48,14 @@ templateParser.prototype = {
             }else{
                 classNames[l] = cssNameMap[name];
             }*/
-            if(this.cssNameMap&&this.cssNameMap[name]){
-                classNames[l] = this.cssNameMap[name];
+            if(this.classNameMap&&this.classNameMap[name]){
+                classNames[l] = this.classNameMap[name];
             }
         }
         return classNames.join(" ");
     },
     _getCSSName:function(contentStr){
-        if(!this.cssNameMap){
+        if(!this.classNameMap){
             return contentStr;
         }
         if(contentStr.search(/\{/gi)!=-1){
@@ -118,6 +124,7 @@ templateParser.prototype = {
                         process.exit(-1);
                     }
                     attribs['class'] = that._getCSSName(attribs['class']);
+                    //console.log(attribs['class'] );
                     nodeArray.push({
                         cssData:attribs['class'],
                         startIndex:parser.startIndex+classStartIndex,

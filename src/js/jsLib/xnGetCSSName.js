@@ -15,8 +15,11 @@ function xnGetCSSName(sourceText){
         var item = rs[i];
         //TODO 处理HTMLTag
         if(item.type == "className"){
-            var text = xnCSSRenameMap[item.text];
-            rsT.push(text?text:item.text);
+            var text = xnCSSRenameMap["className"][item.text];
+            rsT.push("."+text?text:item.text);
+        }else if(item.type == "htmlTag"){
+        	var text = xnCSSRenameMap["htmlTag"][item.text];
+            rsT.push(text?text:"."+item.text);
         }else{
             rsT.push(item.text);
         }

@@ -32,19 +32,20 @@ function findHtmlTag(source,startIndex){
 //
 function findClassName(source,startIndex){
     var endIndex = startIndex;
-    //var isBreak = false;
+    var isBreak = false;
     for(var i = startIndex,l=source.length;i<l;i++){
         var char  = source[i];
         if(cssCharCode.indexOf(char)==-1){
             endIndex = i;
+            isBreak = true;
             break;
         }else{
             endIndex = i;
         }
     }
-   /* if(!isBreak){
+    if(!isBreak){
         endIndex += 1;
-    }*/
+    }
     return source.substring(startIndex,endIndex);
 }
 

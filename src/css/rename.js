@@ -39,7 +39,7 @@ cssRename.prototype = {
             output:"",
             cssNamePrefix:"",
             cssHTMLTagPrefix:"xnCSS",
-            cssHTMLTagBackList:["input","select"]
+            cssHTMLTagBackList:["input","select","iframe","object","img"]
         },options);
         transHTMLTagName.setPrefix(this._options.cssHTMLTagPrefix);
         this._options.cssHTMLTagBackList.forEach(function(item,index,array){

@@ -48,7 +48,11 @@ function treeTransForm(fileName,content,_global_defs){
     //命名混淆
     //compressed_ast.mangle_names(true);
     var compressed_ast2 = compressed_ast.transform(compressor);
-    content = compressed_ast2.print_to_string({beautify:true});
+    if(!global.isXnDebug){
+        compressed_ast2.compute_char_frequency();
+        compressed_ast2.mangle_names();
+    }
+    content = compressed_ast2.print_to_string({beautify:global.isXnDebug?true:false});
     return content;
 }
 
